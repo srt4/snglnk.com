@@ -25,15 +25,6 @@ class AppleMusicProvider extends MusicProvider {
     public function getTrackInfo($data) {
         $trackId = $data['track_id'];
         
-        // Debug output
-        if (isset($_GET['debug_itunes'])) {
-            echo "Track ID: " . $trackId . "<br>";
-            echo "iTunes URL: https://itunes.apple.com/lookup?id={$trackId}&entity=song<br>";
-            $response = @file_get_contents("https://itunes.apple.com/lookup?id={$trackId}&entity=song");
-            echo "Response: " . htmlspecialchars($response) . "<br>";
-            exit();
-        }
-        
         // Try iTunes Search API first
         $itunesUrl = "https://itunes.apple.com/lookup?id={$trackId}&entity=song";
         $response = @file_get_contents($itunesUrl);

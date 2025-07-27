@@ -8,7 +8,13 @@
     <meta property="og:type" content="music.song">
     <meta property="og:title" content="<?= htmlspecialchars($trackName) ?>">
     <meta property="og:description" content="by <?= htmlspecialchars($artistName) ?> • Choose your music app">
-    <meta property="og:image" content="https://snglnk.com/og-image.png">
+    <?php if (isset($albumArt) && $albumArt): ?>
+        <meta property="og:image" content="<?= htmlspecialchars($albumArt) ?>">
+        <meta property="og:image:width" content="300">
+        <meta property="og:image:height" content="300">
+    <?php else: ?>
+        <meta property="og:image" content="https://snglnk.com/og-image.png">
+    <?php endif; ?>
     <meta property="og:url" content="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
     <meta property="og:site_name" content="snglnk">
     
@@ -24,11 +30,15 @@
         .provider { padding: 15px; background: #007acc; color: white; text-decoration: none; border-radius: 8px; transition: background 0.2s; }
         .provider:hover { background: #005999; }
         .remember { margin-top: 20px; color: #666; }
+        .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
     </style>
 </head>
 <body>
     <h1>snglnk</h1>
     <div class="track-info">
+        <?php if (isset($albumArt) && $albumArt): ?>
+            <img src="<?= htmlspecialchars($albumArt) ?>" alt="Album Art" class="album-art">
+        <?php endif; ?>
         <h2><?= htmlspecialchars($trackName) ?></h2>
         <p>by <?= htmlspecialchars($artistName) ?></p>
     </div>

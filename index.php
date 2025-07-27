@@ -40,6 +40,7 @@ function showProviderSelection($trackName, $artistName, $trackInfo = null) {
     ]);
 }
 
+
 // Handle preference setting
 if (isset($_GET['set_provider']) && isset($musicProviders[$_GET['set_provider']])) {
     setUserPreference($_GET['set_provider']);
@@ -67,13 +68,6 @@ if (preg_match('/^https?:\/\/(.+)/', $musicUrl, $matches)) {
     $musicUrl = $matches[1];
 }
 
-// Debug URL parsing
-if (isset($_GET['debug_parse'])) {
-    echo "Music URL: " . htmlspecialchars($musicUrl) . "<br>";
-    $parsedTrack = $providerManager->parseUrl($musicUrl);
-    echo "Parsed result: " . print_r($parsedTrack, true) . "<br>";
-    exit();
-}
 
 // Parse the music URL to detect platform and extract track info
 $parsedTrack = $providerManager->parseUrl($musicUrl);
@@ -85,6 +79,7 @@ if ($parsedTrack) {
     if ($trackInfo && !empty($trackInfo['name']) && !empty($trackInfo['artists'][0]['name'])) {
         $trackName = $trackInfo['name'];
         $artistName = $trackInfo['artists'][0]['name'];
+        
 
         // Get user's preferred music provider
         $userPreference = getUserPreference();
