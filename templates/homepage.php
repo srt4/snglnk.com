@@ -14,9 +14,11 @@
     
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; text-align: center; }
-        .input-container { margin: 30px 0; }
-        .url-input { width: 100%; max-width: 500px; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; }
+        .input-container { margin: 30px 0; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .url-input { flex: 1; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .url-input:focus { outline: none; border-color: #007acc; }
+        .share-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; }
+        .share-btn:hover { background: #1e7e34; }
         .track-preview { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; }
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
         .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
@@ -37,6 +39,7 @@
     
     <div class="input-container">
         <input type="text" class="url-input" placeholder="Paste Spotify, YouTube Music, or Apple Music link here..." id="musicUrl">
+        <button class="share-btn" id="shareBtn" onclick="copyToClipboard()" title="Share this link">Share</button>
     </div>
     
     <div class="loading" id="loading">Finding track info...</div>
@@ -65,6 +68,9 @@
         if (url === '') {
             document.getElementById('trackPreview').style.display = 'none';
             document.getElementById('loading').style.display = 'none';
+            document.getElementById('shareBtn').style.display = 'none';
+            // Reset URL to homepage
+            history.pushState({}, '', '/');
             return;
         }
         
@@ -91,6 +97,13 @@
             document.getElementById('loading').style.display = 'none';
             
             if (data.success) {
+                // Show share button
+                document.getElementById('shareBtn').style.display = 'block';
+                
+                // Update browser URL
+                const cleanUrl = url.replace(/^https?:\/\//, '');
+                history.pushState({}, '', '/' + cleanUrl);
+                
                 // Check if user has preference and redirect immediately
                 if (data.hasPreference && data.redirectUrl) {
                     window.location.href = data.redirectUrl;
@@ -99,10 +112,14 @@
                 
                 // Show track preview
                 showTrackPreview(data.track);
+            } else {
+                // Hide share button on error
+                document.getElementById('shareBtn').style.display = 'none';
             }
         })
         .catch(error => {
             document.getElementById('loading').style.display = 'none';
+            document.getElementById('shareBtn').style.display = 'none';
             console.error('Error:', error);
         });
     }
@@ -137,6 +154,38 @@
         if (document.getElementById('remember').checked) {
             document.cookie = 'music_provider=' + provider + '; max-age=' + (365*24*60*60) + '; path=/';
         }
+    }
+    
+    function copyToClipboard() {
+        const currentUrl = window.location.href;
+        navigator.clipboard.writeText(currentUrl).then(() => {
+            // Show temporary feedback
+            const shareBtn = document.getElementById('shareBtn');
+            const originalText = shareBtn.innerHTML;
+            
+            shareBtn.innerHTML = 'Copied!';
+            shareBtn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                shareBtn.innerHTML = originalText;
+                shareBtn.style.background = '#28a745';
+            }, 1000);
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = window.location.href;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Show feedback
+            const shareBtn = document.getElementById('shareBtn');
+            shareBtn.innerHTML = 'Copied!';
+            setTimeout(() => {
+                shareBtn.innerHTML = 'Share';
+            }, 1000);
+        });
     }
     </script>
 </body>

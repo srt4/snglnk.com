@@ -36,10 +36,21 @@
         .provider.apple:hover { background: #333333; }
         .remember { margin-top: 20px; color: #666; }
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
+        .input-container { margin: 20px 0; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .url-input { flex: 1; padding: 12px; font-size: 14px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #f8f9fa; }
+        .url-input:focus { outline: none; border-color: #007acc; }
+        .share-btn { padding: 12px 16px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: block !important; flex-shrink: 0; }
+        .share-btn:hover { background: #1e7e34; }
     </style>
 </head>
 <body>
     <h1>snglnk</h1>
+    
+    <div class="input-container">
+        <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" readonly id="musicUrl">
+        <button class="share-btn" onclick="copyToClipboard()" title="Share this link">Share</button>
+    </div>
+    
     <div class="track-info">
         <?php if (isset($albumArt) && $albumArt): ?>
             <img src="<?= htmlspecialchars($albumArt) ?>" alt="Album Art" class="album-art">
@@ -66,6 +77,38 @@
         if (document.getElementById("remember").checked) {
             document.cookie = "music_provider=" + provider + "; max-age=" + (365*24*60*60) + "; path=/";
         }
+    }
+    
+    function copyToClipboard() {
+        const currentUrl = window.location.href;
+        navigator.clipboard.writeText(currentUrl).then(() => {
+            // Show temporary feedback
+            const shareBtn = document.querySelector('.share-btn');
+            const originalText = shareBtn.innerHTML;
+            
+            shareBtn.innerHTML = 'Copied!';
+            shareBtn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                shareBtn.innerHTML = originalText;
+                shareBtn.style.background = '#28a745';
+            }, 1000);
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = window.location.href;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Show feedback
+            const shareBtn = document.querySelector('.share-btn');
+            shareBtn.innerHTML = 'Copied!';
+            setTimeout(() => {
+                shareBtn.innerHTML = 'Share';
+            }, 1000);
+        });
     }
     </script>
 </body>
