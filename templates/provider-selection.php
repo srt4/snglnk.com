@@ -27,7 +27,7 @@
     </style>
 </head>
 <body>
-    <h1>🎵 snglnk</h1>
+    <h1>snglnk</h1>
     <div class="track-info">
         <h2><?= htmlspecialchars($trackName) ?></h2>
         <p>by <?= htmlspecialchars($artistName) ?></p>
