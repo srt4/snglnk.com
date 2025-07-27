@@ -14,10 +14,11 @@
     
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; text-align: center; }
-        .input-container { margin: 30px 0; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .url-input { flex: 1; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .input-container { margin: 30px 0; display: -webkit-flex; display: -moz-flex; display: flex; -webkit-align-items: center; -moz-align-items: center; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .input-container > * + * { margin-left: 10px; }
+        .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .url-input:focus { outline: none; border-color: #007acc; }
-        .share-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; }
+        .share-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 80px; }
         .share-btn:hover { background: #1e7e34; }
         .track-preview { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; }
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }

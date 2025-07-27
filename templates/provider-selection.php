@@ -36,10 +36,11 @@
         .provider.apple:hover { background: #333333; }
         .remember { margin-top: 20px; color: #666; }
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
-        .input-container { margin: 20px 0; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .url-input { flex: 1; padding: 12px; font-size: 14px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #f8f9fa; }
+        .input-container { margin: 20px 0; display: -webkit-flex; display: -moz-flex; display: flex; -webkit-align-items: center; -moz-align-items: center; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .input-container > * + * { margin-left: 10px; }
+        .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 12px; font-size: 14px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #f8f9fa; }
         .url-input:focus { outline: none; border-color: #007acc; }
-        .share-btn { padding: 12px 16px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: block !important; flex-shrink: 0; }
+        .share-btn { padding: 12px 16px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: block !important; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 70px; }
         .share-btn:hover { background: #1e7e34; }
     </style>
 </head>
