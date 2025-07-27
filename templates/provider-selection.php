@@ -40,8 +40,8 @@
         .input-container > * + * { margin-left: 10px; }
         .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 12px; font-size: 14px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #f8f9fa; }
         .url-input:focus { outline: none; border-color: #007acc; }
-        .share-btn { padding: 12px 16px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: block !important; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 70px; }
-        .share-btn:hover { background: #1e7e34; }
+        .link-shr-btn { padding: 12px 16px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: block !important; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 70px; }
+        .link-shr-btn:hover { background: #1e7e34; }
     </style>
 </head>
 <body>
@@ -49,7 +49,7 @@
     
     <div class="input-container">
         <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" readonly id="musicUrl">
-        <button class="share-btn" onclick="copyToClipboard()" title="Share this link">Share</button>
+        <button class="link-shr-btn" onclick="copyToClipboard()" title="Share this link">Share</button>
     </div>
     
     <div class="track-info">
@@ -84,7 +84,7 @@
         const currentUrl = window.location.href;
         navigator.clipboard.writeText(currentUrl).then(() => {
             // Show temporary feedback
-            const shareBtn = document.querySelector('.share-btn');
+            const shareBtn = document.querySelector('.link-shr-btn');
             const originalText = shareBtn.innerHTML;
             
             shareBtn.innerHTML = 'Copied!';
@@ -104,7 +104,7 @@
             document.body.removeChild(textArea);
             
             // Show feedback
-            const shareBtn = document.querySelector('.share-btn');
+            const shareBtn = document.querySelector('.link-shr-btn');
             shareBtn.innerHTML = 'Copied!';
             setTimeout(() => {
                 shareBtn.innerHTML = 'Share';

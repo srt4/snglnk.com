@@ -18,8 +18,8 @@
         .input-container > * + * { margin-left: 10px; }
         .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .url-input:focus { outline: none; border-color: #007acc; }
-        .share-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 80px; }
-        .share-btn:hover { background: #1e7e34; }
+        .link-shr-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 80px; }
+        .link-shr-btn:hover { background: #1e7e34; }
         .track-preview { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; }
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
         .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
@@ -40,7 +40,7 @@
     
     <div class="input-container">
         <input type="text" class="url-input" placeholder="Paste Spotify, YouTube Music, or Apple Music link here..." id="musicUrl">
-        <button class="share-btn" id="shareBtn" onclick="copyToClipboard()" title="Share this link">Share</button>
+        <button class="link-shr-btn" id="shareBtn" onclick="copyToClipboard()" title="Share this link">Share</button>
     </div>
     
     <div class="loading" id="loading">Finding track info...</div>
