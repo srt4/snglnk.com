@@ -43,10 +43,17 @@ class AppleMusicProvider extends MusicProvider {
             if ($apiData && isset($apiData['results'][0])) {
                 $track = $apiData['results'][0];
                 if (isset($track['trackName']) && isset($track['artistName'])) {
-                    return [
+                    $result = [
                         'name' => $track['trackName'],
                         'artists' => [['name' => $track['artistName']]]
                     ];
+                    
+                    // Add album artwork if available (use 100x100 size)
+                    if (isset($track['artworkUrl100'])) {
+                        $result['album_art'] = $track['artworkUrl100'];
+                    }
+                    
+                    return $result;
                 }
             }
         }

@@ -21,4 +21,9 @@ abstract class MusicProvider {
     abstract public function parseUrl($url);
     abstract public function getTrackInfo($data);
     abstract public function getSearchUrl($trackName, $artistName);
+    
+    // Default method for getting album artwork (can be overridden)
+    public function getAlbumArt($trackInfo) {
+        return isset($trackInfo['album_art']) ? $trackInfo['album_art'] : null;
+    }
 }

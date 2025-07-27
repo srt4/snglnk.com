@@ -10,7 +10,7 @@ class SpotifyProvider extends MusicProvider {
         parent::__construct('spotify', 'https://open.spotify.com/search/');
         
         // Load configuration
-        $config = require_once dirname(__DIR__) . '/config.php';
+        $config = require dirname(__DIR__) . '/config.php';
         $this->clientId = $config['spotify']['client_id'];
         $this->clientSecret = $config['spotify']['client_secret'];
     }
@@ -45,10 +45,17 @@ class SpotifyProvider extends MusicProvider {
         $trackInfo = json_decode($response, true);
         
         if (!empty($trackInfo['name']) && !empty($trackInfo['artists'][0]['name'])) {
-            return [
+            $result = [
                 'name' => $trackInfo['name'],
                 'artists' => [['name' => $trackInfo['artists'][0]['name']]]
             ];
+            
+            // Add album artwork if available
+            if (!empty($trackInfo['album']['images'][0]['url'])) {
+                $result['album_art'] = $trackInfo['album']['images'][0]['url'];
+            }
+            
+            return $result;
         }
         
         return null;

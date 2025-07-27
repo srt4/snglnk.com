@@ -19,7 +19,7 @@ function setUserPreference($provider) {
 }
 
 // Function to show provider selection page
-function showProviderSelection($trackName, $artistName) {
+function showProviderSelection($trackName, $artistName, $trackInfo = null) {
     global $musicProviders, $providerManager, $template;
     
     // Prepare provider data for template
@@ -35,7 +35,8 @@ function showProviderSelection($trackName, $artistName) {
     $template->display('provider-selection', [
         'trackName' => $trackName,
         'artistName' => $artistName,
-        'providers' => $providers
+        'providers' => $providers,
+        'albumArt' => isset($trackInfo['album_art']) ? $trackInfo['album_art'] : null
     ]);
 }
 
@@ -95,7 +96,7 @@ if ($parsedTrack) {
             exit();
         } else {
             // No preference set - show provider selection page
-            showProviderSelection($trackName, $artistName);
+            showProviderSelection($trackName, $artistName, $trackInfo);
             exit();
         }
     } else {
@@ -120,7 +121,7 @@ if ($parsedTrack) {
                 header("Location: $redirectUrl");
                 exit();
             } else {
-                showProviderSelection($trackName, $artistName);
+                showProviderSelection($trackName, $artistName, $trackInfo);
                 exit();
             }
         }

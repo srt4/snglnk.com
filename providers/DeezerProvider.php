@@ -23,10 +23,17 @@ class DeezerProvider extends MusicProvider {
         if ($response) {
             $apiData = json_decode($response, true);
             if ($apiData && !isset($apiData['error'])) {
-                return [
+                $result = [
                     'name' => $apiData['title'],
                     'artists' => [['name' => $apiData['artist']['name']]]
                 ];
+                
+                // Add album artwork if available (use medium size)
+                if (isset($apiData['album']['cover_medium'])) {
+                    $result['album_art'] = $apiData['album']['cover_medium'];
+                }
+                
+                return $result;
             }
         }
         
