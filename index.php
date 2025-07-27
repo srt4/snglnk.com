@@ -5,7 +5,7 @@ require_once 'Template.php';
 
 // Initialize provider manager and template engine
 $providerManager = new ProviderManager();
-$musicProviders = $providerManager->getSearchUrls();
+$musicProviders = $providerManager->getMainProviders(); // Only show main providers on home screen
 $template = new Template();
 
 // Function to get user's preferred music provider from cookie
@@ -41,6 +41,82 @@ function showProviderSelection($trackName, $artistName, $trackInfo = null) {
 }
 
 
+// Handle AJAX API request for track info
+if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
+    header('Content-Type: application/json');
+    
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+        exit();
+    }
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!isset($input['url'])) {
+        echo json_encode(['success' => false, 'error' => 'URL is required']);
+        exit();
+    }
+    
+    $apiUrl = $input['url'];
+    
+    // Remove protocol if present
+    if (preg_match('/^https?:\/\/(.+)/', $apiUrl, $matches)) {
+        $apiUrl = $matches[1];
+    }
+    
+    // Parse the URL
+    $parsedTrack = $providerManager->parseUrl($apiUrl);
+    
+    if (!$parsedTrack) {
+        echo json_encode(['success' => false, 'error' => 'Unsupported URL format']);
+        exit();
+    }
+    
+    // Get track information
+    $trackInfo = $providerManager->getTrackInfo($parsedTrack['platform'], $parsedTrack['data']);
+    
+    if (!$trackInfo || empty($trackInfo['name']) || empty($trackInfo['artists'][0]['name'])) {
+        echo json_encode(['success' => false, 'error' => 'Unable to fetch track information']);
+        exit();
+    }
+    
+    $trackName = $trackInfo['name'];
+    $artistName = $trackInfo['artists'][0]['name'];
+    
+    // Check if user has a preference
+    $userPreference = getUserPreference();
+    
+    $response = [
+        'success' => true,
+        'track' => [
+            'name' => $trackName,
+            'artist' => $artistName,
+            'albumArt' => isset($trackInfo['album_art']) ? $trackInfo['album_art'] : null,
+            'providers' => []
+        ],
+        'hasPreference' => false,
+        'redirectUrl' => null
+    ];
+    
+    // Build providers list
+    foreach ($musicProviders as $provider => $baseUrl) {
+        $response['track']['providers'][] = [
+            'name' => $provider,
+            'displayName' => ucfirst($provider),
+            'url' => $providerManager->getSearchUrl($provider, $trackName, $artistName)
+        ];
+    }
+    
+    // If user has preference, set redirect URL
+    if ($userPreference && isset($musicProviders[$userPreference])) {
+        $response['hasPreference'] = true;
+        $response['redirectUrl'] = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
+    }
+    
+    echo json_encode($response);
+    exit();
+}
+
 // Handle preference setting
 if (isset($_GET['set_provider']) && isset($musicProviders[$_GET['set_provider']])) {
     setUserPreference($_GET['set_provider']);
@@ -63,11 +139,16 @@ $musicUrl = urldecode($musicUrl);
 // Remove debug parameter if present
 $musicUrl = preg_replace('/[&?]debug=1/', '', $musicUrl);
 
+// If no URL path, show homepage
+if (empty($musicUrl) || $musicUrl === '') {
+    $template->display('homepage', []);
+    exit();
+}
+
 // Handle URLs that start with http:// or https://
 if (preg_match('/^https?:\/\/(.+)/', $musicUrl, $matches)) {
     $musicUrl = $matches[1];
 }
-
 
 // Parse the music URL to detect platform and extract track info
 $parsedTrack = $providerManager->parseUrl($musicUrl);

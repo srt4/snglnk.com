@@ -9,9 +9,16 @@ class YouTubeProvider extends MusicProvider {
     }
     
     public function parseUrl($url) {
+        // YouTube Music URLs
         if (preg_match('/music\.youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]+)/', $url, $matches)) {
             return ['id' => $matches[1]];
         }
+        
+        // Regular YouTube URLs
+        if (preg_match('/(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([a-zA-Z0-9_-]+)/', $url, $matches)) {
+            return ['id' => $matches[1]];
+        }
+        
         return null;
     }
     
@@ -28,9 +35,11 @@ class YouTubeProvider extends MusicProvider {
                 $title = $data['title'];
                 $author = $data['author_name'];
                 
+                $result = [];
+                
                 // Try to split artist and song from title first
                 if (preg_match('/^(.+?)\s*[-–—]\s*(.+)$/', $title, $parts)) {
-                    return [
+                    $result = [
                         'name' => trim($parts[2]),
                         'artists' => [['name' => trim($parts[1])]]
                     ];
@@ -38,11 +47,18 @@ class YouTubeProvider extends MusicProvider {
                     // Use author_name as artist if no delimiter found in title
                     // Clean up "- Topic" suffix from YouTube auto-generated channels
                     $cleanAuthor = preg_replace('/\s*-\s*Topic\s*$/i', '', $author);
-                    return [
+                    $result = [
                         'name' => $title,
                         'artists' => [['name' => $cleanAuthor]]
                     ];
                 }
+                
+                // Add album artwork from YouTube thumbnail
+                if (isset($data['thumbnail_url'])) {
+                    $result['album_art'] = $data['thumbnail_url'];
+                }
+                
+                return $result;
             }
         }
         

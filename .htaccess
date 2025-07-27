@@ -1,0 +1,10 @@
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Exclude API directory from rewriting
+RewriteCond %{REQUEST_URI} !^/api/
+
+# Redirect everything else to index.php (only if file/directory doesn't exist)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L,QSA]

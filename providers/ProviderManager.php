@@ -48,6 +48,18 @@ class ProviderManager {
         return $this->searchUrls;
     }
     
+    public function getMainProviders() {
+        // Only show main providers on home screen
+        $mainProviders = ['spotify', 'youtube', 'apple'];
+        $result = [];
+        foreach ($mainProviders as $provider) {
+            if (isset($this->searchUrls[$provider])) {
+                $result[$provider] = $this->searchUrls[$provider];
+            }
+        }
+        return $result;
+    }
+    
     public function getSearchUrl($platform, $trackName, $artistName) {
         if (isset($this->providers[$platform])) {
             return $this->providers[$platform]->getSearchUrl($trackName, $artistName);
