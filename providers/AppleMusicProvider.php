@@ -5,7 +5,7 @@ require_once 'MusicProvider.php';
 class AppleMusicProvider extends MusicProvider {
     
     public function __construct() {
-        parent::__construct('apple', 'https://music.apple.com/search?term=');
+        parent::__construct('apple', 'https://music.apple.com/us/search?term=');
     }
     
     public function parseUrl($url) {
