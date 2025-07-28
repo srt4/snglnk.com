@@ -18,8 +18,8 @@
         .input-container > * + * { margin-left: 10px; }
         .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .url-input:focus { outline: none; border-color: #007acc; }
-        .link-shr-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 80px; }
-        .link-shr-btn:hover { background: #1e7e34; }
+        .cp-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 80px; }
+        .cp-btn:hover { background: #1e7e34; }
         .track-preview { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; }
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
         .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
@@ -31,7 +31,18 @@
         .provider.apple { background: #000000; }
         .provider.apple:hover { background: #333333; }
         .remember { margin-top: 20px; color: #666; }
-        .loading { display: none; color: #666; }
+        .loading { display: none; color: #666; font-size: 18px; }
+        .loading::after {
+            content: '';
+            animation: ellipsis 1.5s infinite;
+        }
+        @keyframes ellipsis {
+            0% { content: ''; }
+            25% { content: '●'; }
+            50% { content: '●●'; }
+            75% { content: '●●●'; }
+            100% { content: ''; }
+        }
     </style>
 </head>
 <body>
@@ -40,10 +51,10 @@
     
     <div class="input-container">
         <input type="text" class="url-input" placeholder="Paste Spotify, YouTube Music, or Apple Music link here..." id="musicUrl">
-        <button class="link-shr-btn" id="shareBtn" onclick="copyToClipboard()" title="Share this link">Share</button>
+        <button class="cp-btn" id="shareBtn" onclick="copyToClipboard()" title="Copy link">Copy</button>
     </div>
     
-    <div class="loading" id="loading">Finding track info...</div>
+    <div class="loading" id="loading"></div>
     
     <div class="track-preview" id="trackPreview">
         <div id="albumArt"></div>
@@ -66,10 +77,12 @@
         
         clearTimeout(debounceTimer);
         
+        // Always hide track preview when editing starts
+        document.getElementById('trackPreview').style.display = 'none';
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('shareBtn').style.display = 'none';
+        
         if (url === '') {
-            document.getElementById('trackPreview').style.display = 'none';
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('shareBtn').style.display = 'none';
             // Reset URL to homepage
             history.pushState({}, '', '/');
             return;
@@ -184,7 +197,7 @@
             const shareBtn = document.getElementById('shareBtn');
             shareBtn.innerHTML = 'Copied!';
             setTimeout(() => {
-                shareBtn.innerHTML = 'Share';
+                shareBtn.innerHTML = 'Copy';
             }, 1000);
         });
     }

@@ -38,18 +38,18 @@
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
         .input-container { margin: 20px 0; display: -webkit-flex; display: -moz-flex; display: flex; -webkit-align-items: center; -moz-align-items: center; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
         .input-container > * + * { margin-left: 10px; }
-        .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 12px; font-size: 14px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #f8f9fa; }
+        .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 12px; font-size: 14px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; background: white; }
         .url-input:focus { outline: none; border-color: #007acc; }
-        .link-shr-btn { padding: 12px 16px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: block !important; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 70px; }
-        .link-shr-btn:hover { background: #1e7e34; }
+        .cp-btn { padding: 12px 16px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.2s; display: block !important; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 70px; }
+        .cp-btn:hover { background: #1e7e34; }
     </style>
 </head>
 <body>
     <h1>snglnk</h1>
     
     <div class="input-container">
-        <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" readonly id="musicUrl">
-        <button class="link-shr-btn" onclick="copyToClipboard()" title="Share this link">Share</button>
+        <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" id="musicUrl" placeholder="Paste a different music link here...">
+        <button class="cp-btn" onclick="copyToClipboard()" title="Copy link">Copy</button>
     </div>
     
     <div class="track-info">
@@ -80,11 +80,37 @@
         }
     }
     
+    let debounceTimer;
+    let originalUrl = document.getElementById('musicUrl').value;
+    
+    document.getElementById('musicUrl').addEventListener('input', function() {
+        const url = this.value.trim();
+        
+        clearTimeout(debounceTimer);
+        
+        // Hide track info when editing starts
+        if (url !== originalUrl) {
+            document.querySelector('.track-info').style.display = 'none';
+        }
+        
+        if (url === '') {
+            // Reset to homepage if empty
+            window.location.href = '/';
+            return;
+        }
+        
+        // Debounce the redirect to new URL
+        debounceTimer = setTimeout(() => {
+            const cleanUrl = url.replace(/^https?:\/\//, '');
+            window.location.href = '/' + cleanUrl;
+        }, 1000);
+    });
+    
     function copyToClipboard() {
         const currentUrl = window.location.href;
         navigator.clipboard.writeText(currentUrl).then(() => {
             // Show temporary feedback
-            const shareBtn = document.querySelector('.link-shr-btn');
+            const shareBtn = document.querySelector('.cp-btn');
             const originalText = shareBtn.innerHTML;
             
             shareBtn.innerHTML = 'Copied!';
@@ -104,10 +130,10 @@
             document.body.removeChild(textArea);
             
             // Show feedback
-            const shareBtn = document.querySelector('.link-shr-btn');
+            const shareBtn = document.querySelector('.cp-btn');
             shareBtn.innerHTML = 'Copied!';
             setTimeout(() => {
-                shareBtn.innerHTML = 'Share';
+                shareBtn.innerHTML = 'Copy';
             }, 1000);
         });
     }
