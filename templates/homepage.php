@@ -35,6 +35,17 @@
             75% { content: '●●●'; }
             100% { content: ''; }
         }
+        .skeleton { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; opacity: 0; transition: opacity 0.2s ease; }
+        .skeleton.show { display: block; opacity: 1; }
+        .skeleton-image { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton-title { height: 32px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 15px auto; width: 80%; }
+        .skeleton-artist { height: 20px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 10px auto; width: 60%; }
+        .skeleton-providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+        .skeleton-provider { height: 56px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
         .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
         .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
         .provider { padding: 18px; color: white; text-decoration: none; border-radius: 8px; transition: all 0.1s ease; font-size: 18px; transform: scale(1); }
@@ -59,6 +70,18 @@
     </div>
     
     <div class="loading" id="loading"></div>
+    
+    <div class="skeleton" id="skeleton">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-title"></div>
+        <div class="skeleton-artist"></div>
+        <p>Choose your music provider:</p>
+        <div class="skeleton-providers">
+            <div class="skeleton-provider"></div>
+            <div class="skeleton-provider"></div>
+            <div class="skeleton-provider"></div>
+        </div>
+    </div>
     
     <div class="track-preview" id="trackPreview">
         <div id="albumArt"></div>
@@ -86,6 +109,7 @@
         preview.classList.remove('show');
         setTimeout(() => preview.style.display = 'none', 200);
         document.getElementById('loading').style.display = 'none';
+        document.getElementById('skeleton').classList.remove('show');
         document.getElementById('shareBtn').style.display = 'none';
         
         if (url === '') {
@@ -101,7 +125,7 @@
     });
     
     function fetchTrackInfo(url) {
-        document.getElementById('loading').style.display = 'block';
+        document.getElementById('skeleton').classList.add('show');
         document.getElementById('trackPreview').style.display = 'none';
         
         // AJAX call to get track info
@@ -114,7 +138,7 @@
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('skeleton').classList.remove('show');
             
             if (data.success) {
                 // Show share button
@@ -143,7 +167,7 @@
             }
         })
         .catch(error => {
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('skeleton').classList.remove('show');
             document.getElementById('shareBtn').style.display = 'none';
             console.error('Error:', error);
         });

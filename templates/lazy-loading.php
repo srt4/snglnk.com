@@ -38,6 +38,17 @@
             75% { content: '●●●'; }
             100% { content: ''; }
         }
+        .skeleton { display: none; background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .skeleton.show { display: block; }
+        .skeleton-image { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton-title { height: 32px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 15px auto; width: 80%; }
+        .skeleton-artist { height: 20px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 10px auto; width: 60%; }
+        .skeleton-providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+        .skeleton-provider { height: 56px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
         .content { opacity: 0; transition: opacity 0.3s ease; }
         .content.loaded { opacity: 1; }
         .track-info { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
@@ -64,12 +75,25 @@
     </div>
     
     <div class="loading" id="loading"></div>
+    
+    <div class="skeleton" id="skeleton">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-title"></div>
+        <div class="skeleton-artist"></div>
+        <p>Choose your music provider:</p>
+        <div class="skeleton-providers">
+            <div class="skeleton-provider"></div>
+            <div class="skeleton-provider"></div>
+            <div class="skeleton-provider"></div>
+        </div>
+    </div>
+    
     <div class="content" id="content"></div>
     
     <script>
     // Lazy load the full content via AJAX
     window.addEventListener('load', function() {
-        document.getElementById('loading').style.display = 'block';
+        document.getElementById('skeleton').classList.add('show');
         
         fetch('/?api=track-info', {
             method: 'POST',
@@ -106,12 +130,12 @@
         })
         .then(response => response.text())
         .then(html => {
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('skeleton').classList.remove('show');
             document.getElementById('content').innerHTML = html;
             document.getElementById('content').classList.add('loaded');
         })
         .catch(error => {
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('skeleton').classList.remove('show');
             document.getElementById('content').innerHTML = '<p>Error loading content. Please refresh the page.</p>';
             console.error('Error:', error);
         });
@@ -128,6 +152,7 @@
         
         if (url !== originalUrl) {
             document.getElementById('content').style.display = 'none';
+            document.getElementById('skeleton').classList.remove('show');
         }
         
         if (url === '') {
