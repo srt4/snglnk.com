@@ -42,6 +42,40 @@ function showProviderSelection($trackName, $artistName, $trackInfo = null, $orig
 }
 
 
+// Handle AJAX API request for lazy content
+if (isset($_GET['api']) && $_GET['api'] === 'lazy-content') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+        exit();
+    }
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    $trackName = $input['trackName'] ?? '';
+    $artistName = $input['artistName'] ?? '';
+    $albumArt = $input['albumArt'] ?? null;
+    
+    // Generate the provider content
+    $providers = [];
+    foreach ($musicProviders as $provider => $baseUrl) {
+        $providers[] = [
+            'name' => $provider,
+            'displayName' => ucfirst($provider),
+            'url' => $providerManager->getSearchUrl($provider, $trackName, $artistName)
+        ];
+    }
+    
+    // Return HTML content using template
+    $template->display('lazy-content', [
+        'trackName' => $trackName,
+        'artistName' => $artistName,
+        'albumArt' => $albumArt,
+        'providers' => $providers
+    ]);
+    
+    exit();
+}
+
 // Handle AJAX API request for track info
 if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
     header('Content-Type: application/json');
@@ -146,6 +180,34 @@ if (empty($musicUrl) || $musicUrl === '') {
     exit();
 }
 
+// Function to detect social media crawlers/bots
+function isSocialBot() {
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $botPatterns = [
+        'WhatsApp',
+        'facebookexternalhit',
+        'Twitterbot',
+        'LinkedInBot',
+        'TelegramBot',
+        'SkypeUriPreview',
+        'Slackbot',
+        'RedditBot',
+        'discordbot',
+        'google',  // Google for link previews
+        'crawler',
+        'spider',
+        'bot'
+    ];
+    
+    foreach ($botPatterns as $pattern) {
+        if (stripos($userAgent, $pattern) !== false) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 // Handle URLs that start with http:// or https://
 if (preg_match('/^https?:\/\/(.+)/', $musicUrl, $matches)) {
     $musicUrl = $matches[1];
@@ -172,8 +234,19 @@ if ($parsedTrack) {
             header("Location: $redirectUrl");
             exit();
         } else {
-            // No preference set - show provider selection page
-            showProviderSelection($trackName, $artistName, $trackInfo, $musicUrl);
+            // Check if it's a bot vs real user
+            if (isSocialBot()) {
+                // For bots: Show full page immediately for link previews
+                showProviderSelection($trackName, $artistName, $trackInfo, $musicUrl);
+            } else {
+                // For real users: Show lazy loading version
+                $template->display('lazy-loading', [
+                    'originalUrl' => $musicUrl,
+                    'trackName' => $trackName,
+                    'artistName' => $artistName,
+                    'albumArt' => isset($trackInfo['album_art']) ? $trackInfo['album_art'] : null
+                ]);
+            }
             exit();
         }
     } else {

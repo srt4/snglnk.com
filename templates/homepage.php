@@ -13,25 +13,17 @@
     <meta property="og:site_name" content="snglnk">
     
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; text-align: center; }
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; text-align: center; font-size: 18px; }
         .input-container { margin: 30px 0; display: -webkit-flex; display: -moz-flex; display: flex; -webkit-align-items: center; -moz-align-items: center; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
         .input-container > * + * { margin-left: 10px; }
-        .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 18px; font-size: 18px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .url-input:focus { outline: none; border-color: #007acc; }
-        .cp-btn { padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none; transition: background 0.2s; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 80px; }
-        .cp-btn:hover { background: #1e7e34; }
-        .track-preview { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; }
-        .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
-        .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
-        .provider { padding: 15px; color: white; text-decoration: none; border-radius: 8px; transition: background 0.2s; }
-        .provider.spotify { background: #1db954; }
-        .provider.spotify:hover { background: #1ed760; }
-        .provider.youtube { background: #ff0000; }
-        .provider.youtube:hover { background: #cc0000; }
-        .provider.apple { background: #000000; }
-        .provider.apple:hover { background: #333333; }
-        .remember { margin-top: 20px; color: #666; }
-        .loading { display: none; color: #666; font-size: 18px; }
+        .cp-btn { padding: 18px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; display: none; transition: all 0.1s ease; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 90px; transform: scale(1); }
+        .cp-btn:hover { background: #1e7e34; transform: scale(1.02); }
+        .cp-btn:active { transform: scale(0.98); }
+        .track-preview { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; opacity: 0; transition: opacity 0.2s ease; }
+        .track-preview.show { opacity: 1; }
+        .loading { display: none; color: #666; font-size: 24px; }
         .loading::after {
             content: '';
             animation: ellipsis 1.5s infinite;
@@ -43,6 +35,18 @@
             75% { content: '●●●'; }
             100% { content: ''; }
         }
+        .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
+        .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+        .provider { padding: 18px; color: white; text-decoration: none; border-radius: 8px; transition: all 0.1s ease; font-size: 18px; transform: scale(1); }
+        .provider:hover { transform: scale(1.03); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .provider:active { transform: scale(0.97); }
+        .provider.spotify { background: #1db954; }
+        .provider.spotify:hover { background: #1ed760; }
+        .provider.youtube { background: #ff0000; }
+        .provider.youtube:hover { background: #cc0000; }
+        .provider.apple { background: #000000; }
+        .provider.apple:hover { background: #333333; }
+        .remember { margin-top: 20px; color: #666; }
     </style>
 </head>
 <body>
@@ -77,21 +81,23 @@
         
         clearTimeout(debounceTimer);
         
-        // Always hide track preview when editing starts
-        document.getElementById('trackPreview').style.display = 'none';
+        // Instant feedback when editing starts
+        const preview = document.getElementById('trackPreview');
+        preview.classList.remove('show');
+        setTimeout(() => preview.style.display = 'none', 200);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('shareBtn').style.display = 'none';
         
         if (url === '') {
-            // Reset URL to homepage
+            // Just clear the URL, don't redirect
             history.pushState({}, '', '/');
             return;
         }
         
-        // Debounce the AJAX call
+        // Super snappy response!
         debounceTimer = setTimeout(() => {
             fetchTrackInfo(url);
-        }, 500);
+        }, 150);
     });
     
     function fetchTrackInfo(url) {
@@ -124,7 +130,7 @@
                     return;
                 }
                 
-                // Show track preview
+                // Show track preview with smooth animation
                 showTrackPreview(data.track);
             } else {
                 // Hide share button on error
@@ -161,7 +167,10 @@
             providersContainer.appendChild(link);
         });
         
-        document.getElementById('trackPreview').style.display = 'block';
+        const preview = document.getElementById('trackPreview');
+        preview.style.display = 'block';
+        // Trigger animation after display
+        setTimeout(() => preview.classList.add('show'), 10);
     }
     
     function setPreference(provider) {
