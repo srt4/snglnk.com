@@ -19,6 +19,13 @@
     
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; font-size: 18px; }
+        @media (max-width: 768px) {
+            body { margin: 0 auto; padding: 15px; }
+            h1 { margin-top: 0; }
+            .track-preview { margin: 20px 0; padding: 15px; }
+            .album-art { width: 120px; height: 120px; margin: 5px auto 5px auto; }
+            .providers { margin: 10px 0; gap: 12px; }
+        }
         .input-container { margin: 20px 0; display: -webkit-flex; display: -moz-flex; display: flex; -webkit-align-items: center; -moz-align-items: center; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
         .input-container > * + * { margin-left: 10px; }
         .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 16px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; background: white; }

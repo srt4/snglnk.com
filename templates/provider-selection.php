@@ -25,6 +25,10 @@
     
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; font-size: 18px; }
+        @media (max-width: 768px) {
+            body { margin: 0 auto; padding: 15px; }
+            h1 { margin-top: 0; }
+        }
         .track-info { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
         .provider { padding: 15px; color: white; text-decoration: none; border-radius: 8px; transition: background 0.2s; }
