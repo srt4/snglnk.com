@@ -124,6 +124,11 @@
                 const cleanUrl = url.replace(/^https?:\/\//, '');
                 history.pushState({}, '', '/' + cleanUrl);
                 
+                // Log performance metrics
+                if (data.perf) {
+                    console.log(`PERF: Total=${data.perf.total}ms Parse=${data.perf.parse}ms API=${data.perf.api}ms Platform=${data.perf.platform}`);
+                }
+                
                 // Check if user has preference and redirect immediately
                 if (data.hasPreference && data.redirectUrl) {
                     window.location.href = data.redirectUrl;

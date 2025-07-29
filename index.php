@@ -1,12 +1,17 @@
 <?php
+$startTime = microtime(true);
 
+$requireStart = microtime(true);
 require_once 'providers/ProviderManager.php';
 require_once 'Template.php';
+$requireEnd = microtime(true);
 
 // Initialize provider manager and template engine
+$initStart = microtime(true);
 $providerManager = new ProviderManager();
 $musicProviders = $providerManager->getMainProviders(); // Only show main providers on home screen
 $template = new Template();
+$initEnd = microtime(true);
 
 // Function to get user's preferred music provider from cookie
 function getUserPreference() {
@@ -78,6 +83,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'lazy-content') {
 
 // Handle AJAX API request for track info
 if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
+    $ajaxStartTime = microtime(true);
     header('Content-Type: application/json');
     
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -100,7 +106,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
     }
     
     // Parse the URL
+    $ajaxParseStart = microtime(true);
     $parsedTrack = $providerManager->parseUrl($apiUrl);
+    $ajaxParseEnd = microtime(true);
     
     if (!$parsedTrack) {
         echo json_encode(['success' => false, 'error' => 'Unsupported URL format']);
@@ -108,7 +116,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
     }
     
     // Get track information
+    $ajaxApiStart = microtime(true);
     $trackInfo = $providerManager->getTrackInfo($parsedTrack['platform'], $parsedTrack['data']);
+    $ajaxApiEnd = microtime(true);
     
     if (!$trackInfo || empty($trackInfo['name']) || empty($trackInfo['artists'][0]['name'])) {
         echo json_encode(['success' => false, 'error' => 'Unable to fetch track information']);
@@ -148,6 +158,17 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
         $response['redirectUrl'] = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
     }
     
+    // Add performance metrics
+    $ajaxTotalTime = microtime(true) - $ajaxStartTime;
+    $ajaxParseTime = ($ajaxParseEnd - $ajaxParseStart) * 1000;
+    $ajaxApiTime = ($ajaxApiEnd - $ajaxApiStart) * 1000;
+    $response['perf'] = [
+        'total' => round($ajaxTotalTime * 1000, 2),
+        'parse' => round($ajaxParseTime, 2),
+        'api' => round($ajaxApiTime, 2),
+        'platform' => $parsedTrack['platform']
+    ];
+    
     echo json_encode($response);
     exit();
 }
@@ -167,12 +188,14 @@ if (isset($_GET['reset'])) {
 }
 
 // Get the music URL from the URL path
+$urlParseStart = microtime(true);
 $fullUrl = $_SERVER['REQUEST_URI'];
 $musicUrl = ltrim($fullUrl, '/');
 $musicUrl = urldecode($musicUrl);
 
 // Remove debug parameter if present
 $musicUrl = preg_replace('/[&?]debug=1/', '', $musicUrl);
+$urlParseEnd = microtime(true);
 
 // If no URL path, show homepage
 if (empty($musicUrl) || $musicUrl === '') {
@@ -213,71 +236,57 @@ if (preg_match('/^https?:\/\/(.+)/', $musicUrl, $matches)) {
     $musicUrl = $matches[1];
 }
 
-// Parse the music URL to detect platform and extract track info
-$parsedTrack = $providerManager->parseUrl($musicUrl);
+// Check if it's a bot vs real user FIRST (before expensive operations)
+if (isSocialBot()) {
+    // For bots: Do full processing for link previews
+    $parseStartTime = microtime(true);
+    $parsedTrack = $providerManager->parseUrl($musicUrl);
+    $parseEndTime = microtime(true);
 
-if ($parsedTrack) {
-    // Get track information from the detected platform
-    $trackInfo = $providerManager->getTrackInfo($parsedTrack['platform'], $parsedTrack['data']);
+    if ($parsedTrack) {
+        $apiStartTime = microtime(true);
+        $trackInfo = $providerManager->getTrackInfo($parsedTrack['platform'], $parsedTrack['data']);
+        $apiEndTime = microtime(true);
 
-    if ($trackInfo && !empty($trackInfo['name']) && !empty($trackInfo['artists'][0]['name'])) {
-        $trackName = $trackInfo['name'];
-        $artistName = $trackInfo['artists'][0]['name'];
-        
-
-        // Get user's preferred music provider
-        $userPreference = getUserPreference();
-        
-        if ($userPreference && isset($musicProviders[$userPreference])) {
-            // Redirect to user's preferred provider
-            $redirectUrl = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
-            header("Location: $redirectUrl");
-            exit();
-        } else {
-            // Check if it's a bot vs real user
-            if (isSocialBot()) {
-                // For bots: Show full page immediately for link previews
-                showProviderSelection($trackName, $artistName, $trackInfo, $musicUrl);
-            } else {
-                // For real users: Show lazy loading version
-                $template->display('lazy-loading', [
-                    'originalUrl' => $musicUrl,
-                    'trackName' => $trackName,
-                    'artistName' => $artistName,
-                    'albumArt' => isset($trackInfo['album_art']) ? $trackInfo['album_art'] : null
-                ]);
-            }
-            exit();
-        }
-    } else {
-        echo "Unable to fetch track information from " . $parsedTrack['platform'] . ".";
-        exit();
-    }
-} else {
-    // Try legacy Spotify track ID format for backwards compatibility
-    if (preg_match('/^([a-zA-Z0-9]+)(.*)$/', $musicUrl, $matches)) {
-        $trackId = $matches[1];
-        $spotifyProvider = new SpotifyProvider();
-        $trackInfo = $spotifyProvider->getTrackInfo(['id' => $trackId]);
-        
         if ($trackInfo && !empty($trackInfo['name']) && !empty($trackInfo['artists'][0]['name'])) {
             $trackName = $trackInfo['name'];
             $artistName = $trackInfo['artists'][0]['name'];
-
+            
+            // Get user's preferred music provider
             $userPreference = getUserPreference();
             
             if ($userPreference && isset($musicProviders[$userPreference])) {
+                // Redirect to user's preferred provider
                 $redirectUrl = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
                 header("Location: $redirectUrl");
                 exit();
             } else {
-                showProviderSelection($trackName, $artistName, $trackInfo, $trackId);
+                // Show full page for bots
+                $totalTime = microtime(true) - $startTime;
+                $parseTime = ($parseEndTime - $parseStartTime) * 1000;
+                $apiTime = ($apiEndTime - $apiStartTime) * 1000;
+                echo "<!-- PERF BOT: Total=" . round($totalTime * 1000, 2) . "ms Parse=" . round($parseTime, 2) . "ms API=" . round($apiTime, 2) . "ms Platform=" . $parsedTrack['platform'] . " -->";
+                showProviderSelection($trackName, $artistName, $trackInfo, $musicUrl);
                 exit();
             }
+        } else {
+            echo "Unable to fetch track information from " . $parsedTrack['platform'] . ".";
+            exit();
         }
+    } else {
+        echo "Invalid or unsupported music URL format. Supported platforms: Spotify, YouTube Music, Apple Music, Deezer, Tidal, SoundCloud";
+        exit();
     }
-    
-    echo "Invalid or unsupported music URL format. Supported platforms: Spotify, YouTube Music, Apple Music, Deezer, Tidal, SoundCloud";
+} else {
+    // For real users: Show lazy loading version with NO expensive operations
+    $totalTime = microtime(true) - $startTime;
+    $requireTime = ($requireEnd - $requireStart) * 1000;
+    $initTime = ($initEnd - $initStart) * 1000;
+    $urlParseTime = ($urlParseEnd - $urlParseStart) * 1000;
+    echo "<!-- PERF USER: Total=" . round($totalTime * 1000, 2) . "ms Requires=" . round($requireTime, 2) . "ms Init=" . round($initTime, 2) . "ms UrlParse=" . round($urlParseTime, 2) . "ms -->";
+    $template->display('lazy-loading', [
+        'originalUrl' => $musicUrl
+    ]);
     exit();
 }
 ?>

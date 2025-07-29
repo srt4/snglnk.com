@@ -1,27 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= htmlspecialchars($trackName . ' by ' . $artistName . ' - snglnk') ?></title>
+    <title>snglnk - Universal Music Link Converter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- Open Graph / WhatsApp Preview (for any bots that slip through) -->
-    <meta property="og:type" content="music.song">
-    <meta property="og:title" content="<?= htmlspecialchars($trackName) ?>">
-    <meta property="og:description" content="by <?= htmlspecialchars($artistName) ?> • Choose your music app">
-    <?php if (isset($albumArt) && $albumArt): ?>
-        <meta property="og:image" content="<?= htmlspecialchars($albumArt) ?>">
-        <meta property="og:image:width" content="300">
-        <meta property="og:image:height" content="300">
-    <?php else: ?>
-        <meta property="og:image" content="https://snglnk.com/og-image.png">
-    <?php endif; ?>
+    <!-- Open Graph / WhatsApp Preview (generic fallback) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="snglnk - Universal Music Link Converter">
+    <meta property="og:description" content="Paste any music link and choose your preferred music app">
+    <meta property="og:image" content="https://snglnk.com/og-image.png">
     <meta property="og:url" content="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
     <meta property="og:site_name" content="snglnk">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="<?= htmlspecialchars($trackName) ?>">
-    <meta name="twitter:description" content="by <?= htmlspecialchars($artistName) ?> • Choose your music app">
+    <meta name="twitter:title" content="snglnk - Universal Music Link Converter">
+    <meta name="twitter:description" content="Paste any music link and choose your preferred music app">
     
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; font-size: 18px; }
@@ -46,6 +40,19 @@
         }
         .content { opacity: 0; transition: opacity 0.3s ease; }
         .content.loaded { opacity: 1; }
+        .track-info { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
+        .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+        .provider { padding: 18px; color: white; text-decoration: none; border-radius: 8px; transition: all 0.1s ease; font-size: 18px; transform: scale(1); }
+        .provider:hover { transform: scale(1.03); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .provider:active { transform: scale(0.97); }
+        .provider.spotify { background: #1db954; }
+        .provider.spotify:hover { background: #1ed760; }
+        .provider.youtube { background: #ff0000; }
+        .provider.youtube:hover { background: #cc0000; }
+        .provider.apple { background: #000000; }
+        .provider.apple:hover { background: #333333; }
+        .remember { margin-top: 20px; color: #666; }
     </style>
 </head>
 <body>
@@ -64,17 +71,38 @@
     window.addEventListener('load', function() {
         document.getElementById('loading').style.display = 'block';
         
-        fetch('/?api=lazy-content', {
+        fetch('/?api=track-info', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ 
-                url: '<?= htmlspecialchars($originalUrl ?? '') ?>',
-                trackName: '<?= htmlspecialchars($trackName) ?>',
-                artistName: '<?= htmlspecialchars($artistName) ?>',
-                albumArt: '<?= htmlspecialchars($albumArt ?? '') ?>'
+                url: '<?= htmlspecialchars($originalUrl ?? '') ?>'
             })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to fetch track info');
+            }
+            
+            // Log performance metrics
+            if (data.perf) {
+                console.log(`PERF LAZY: Total=${data.perf.total}ms Parse=${data.perf.parse}ms API=${data.perf.api}ms Platform=${data.perf.platform}`);
+            }
+            
+            // Now fetch the HTML content with the track data
+            return fetch('/?api=lazy-content', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    trackName: data.track.name,
+                    artistName: data.track.artist,
+                    albumArt: data.track.albumArt
+                })
+            });
         })
         .then(response => response.text())
         .then(html => {
@@ -140,6 +168,12 @@
                 shareBtn.innerHTML = 'Copy';
             }, 1000);
         });
+    }
+    
+    function setPreference(provider) {
+        if (document.getElementById("remember").checked) {
+            document.cookie = "music_provider=" + provider + "; max-age=" + (365*24*60*60) + "; path=/";
+        }
     }
     </script>
 </body>
