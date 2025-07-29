@@ -6,6 +6,7 @@ require_once 'AppleMusicProvider.php';
 require_once 'DeezerProvider.php';
 require_once 'TidalProvider.php';
 require_once 'SoundCloudProvider.php';
+require_once 'QobuzProvider.php';
 
 class ProviderManager {
     private $providers = [];
@@ -44,6 +45,9 @@ class ProviderManager {
                 case 'soundcloud':
                     $this->providers[$name] = new SoundCloudProvider();
                     break;
+                case 'qobuz':
+                    $this->providers[$name] = new QobuzProvider();
+                    break;
                 default:
                     return null;
             }
@@ -52,8 +56,8 @@ class ProviderManager {
     }
     
     public function parseUrl($url) {
-        // Try each provider type
-        $providerNames = ['spotify', 'youtube', 'apple', 'deezer', 'tidal', 'soundcloud'];
+        // Try each provider type (including Qobuz as source)
+        $providerNames = ['spotify', 'youtube', 'apple', 'deezer', 'tidal', 'soundcloud', 'qobuz'];
         foreach ($providerNames as $name) {
             $provider = $this->getProvider($name);
             if ($provider) {

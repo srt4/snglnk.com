@@ -274,16 +274,47 @@ if (isSocialBot()) {
             exit();
         }
     } else {
-        echo "Invalid or unsupported music URL format. Supported platforms: Spotify, YouTube Music, Apple Music, Deezer, Tidal, SoundCloud";
+        echo "Invalid or unsupported music URL format. Supported platforms: Spotify, YouTube Music, Apple Music, Deezer, Tidal, SoundCloud, Qobuz";
         exit();
     }
 } else {
-    // For real users: Show lazy loading version with NO expensive operations
+    // For real users: Check preference first, then lazy load if no preference
+    $userPreference = getUserPreference();
+    
+    if ($userPreference && isset($musicProviders[$userPreference])) {
+        // User has preference - do minimal processing for redirect
+        $parseStartTime = microtime(true);
+        $parsedTrack = $providerManager->parseUrl($musicUrl);
+        $parseEndTime = microtime(true);
+        
+        if ($parsedTrack) {
+            $apiStartTime = microtime(true);
+            $trackInfo = $providerManager->getTrackInfo($parsedTrack['platform'], $parsedTrack['data']);
+            $apiEndTime = microtime(true);
+            
+            if ($trackInfo && !empty($trackInfo['name']) && !empty($trackInfo['artists'][0]['name'])) {
+                $trackName = $trackInfo['name'];
+                $artistName = $trackInfo['artists'][0]['name'];
+                
+                // Redirect to user's preferred provider
+                $totalTime = microtime(true) - $startTime;
+                $parseTime = ($parseEndTime - $parseStartTime) * 1000;
+                $apiTime = ($apiEndTime - $apiStartTime) * 1000;
+                echo "<!-- PERF USER REDIRECT: Total=" . round($totalTime * 1000, 2) . "ms Parse=" . round($parseTime, 2) . "ms API=" . round($apiTime, 2) . "ms Platform=" . $parsedTrack['platform'] . " -->";
+                
+                $redirectUrl = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
+                header("Location: $redirectUrl");
+                exit();
+            }
+        }
+    }
+    
+    // No preference or couldn't process - show lazy loading version
     $totalTime = microtime(true) - $startTime;
     $requireTime = ($requireEnd - $requireStart) * 1000;
     $initTime = ($initEnd - $initStart) * 1000;
     $urlParseTime = ($urlParseEnd - $urlParseStart) * 1000;
-    echo "<!-- PERF USER: Total=" . round($totalTime * 1000, 2) . "ms Requires=" . round($requireTime, 2) . "ms Init=" . round($initTime, 2) . "ms UrlParse=" . round($urlParseTime, 2) . "ms -->";
+    echo "<!-- PERF USER LAZY: Total=" . round($totalTime * 1000, 2) . "ms Requires=" . round($requireTime, 2) . "ms Init=" . round($initTime, 2) . "ms UrlParse=" . round($urlParseTime, 2) . "ms -->";
     $template->display('lazy-loading', [
         'originalUrl' => $musicUrl
     ]);
