@@ -4,6 +4,7 @@ $startTime = microtime(true);
 $requireStart = microtime(true);
 require_once 'providers/ProviderManager.php';
 require_once 'Template.php';
+require_once 'TrackCache.php';
 $requireEnd = microtime(true);
 
 // Initialize provider manager and template engine
@@ -187,6 +188,14 @@ if (isset($_GET['reset'])) {
     exit();
 }
 
+// Handle cache stats (for debugging)
+if (isset($_GET['cache_stats'])) {
+    header('Content-Type: application/json');
+    $stats = $providerManager->getCacheStats();
+    echo json_encode($stats);
+    exit();
+}
+
 // Get the music URL from the URL path
 $urlParseStart = microtime(true);
 $fullUrl = $_SERVER['REQUEST_URI'];
@@ -235,6 +244,11 @@ function isSocialBot() {
 if (preg_match('/^https?:\/\/(.+)/', $musicUrl, $matches)) {
     $musicUrl = $matches[1];
 }
+
+// Clean tracking parameters from URL
+$trackCache = new TrackCache();
+$cleanedUrl = $trackCache->cleanUrl('https://' . $musicUrl);
+$musicUrl = preg_replace('/^https?:\/\//', '', $cleanedUrl);
 
 // Check if it's a bot vs real user FIRST (before expensive operations)
 if (isSocialBot()) {

@@ -1,5 +1,6 @@
 <?php
 
+require_once dirname(__DIR__) . '/TrackCache.php';
 require_once 'SpotifyProvider.php';
 require_once 'YouTubeProvider.php';
 require_once 'AppleMusicProvider.php';
@@ -11,8 +12,16 @@ require_once 'QobuzProvider.php';
 class ProviderManager {
     private $providers = [];
     private $searchUrls;
+    private $cache;
     
     public function __construct() {
+        $this->cache = new TrackCache();
+        
+        // Occasionally clean up old cache entries (1 in 100 requests)
+        if (rand(1, 100) === 1) {
+            $this->cache->cleanup();
+        }
+        
         // Define search URLs without instantiating providers
         $this->searchUrls = [
             'spotify' => 'https://open.spotify.com/search/',
@@ -71,9 +80,26 @@ class ProviderManager {
     }
     
     public function getTrackInfo($platform, $data) {
+        // Generate cache key
+        $trackKey = $this->cache->getTrackKey($platform, $data);
+        
+        // Try to get from cache first
+        $cachedInfo = $this->cache->get($platform, $trackKey);
+        if ($cachedInfo) {
+            return $cachedInfo;
+        }
+        
+        // Not in cache, fetch from provider
         $provider = $this->getProvider($platform);
         if ($provider) {
-            return $provider->getTrackInfo($data);
+            $trackInfo = $provider->getTrackInfo($data);
+            
+            // Cache the result if successful
+            if ($trackInfo && isset($trackInfo['name']) && isset($trackInfo['artists'][0]['name'])) {
+                $this->cache->set($platform, $trackKey, $trackInfo);
+            }
+            
+            return $trackInfo;
         }
         return null;
     }
@@ -100,5 +126,9 @@ class ProviderManager {
             return $provider->getSearchUrl($trackName, $artistName);
         }
         return null;
+    }
+    
+    public function getCacheStats() {
+        return $this->cache->getStats();
     }
 }
