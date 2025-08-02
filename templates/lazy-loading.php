@@ -174,6 +174,8 @@
     window.addEventListener('load', function() {
         document.getElementById('skeleton').classList.add('show');
         
+        let trackData = null; // Store track data for short link creation
+        
         fetch('/?api=track-info', {
             method: 'POST',
             headers: {
@@ -188,6 +190,9 @@
             if (!data.success) {
                 throw new Error(data.error || 'Failed to fetch track info');
             }
+            
+            // Store track data for later use
+            trackData = data.track;
             
             // Log performance metrics
             if (data.perf) {
@@ -212,6 +217,13 @@
             document.getElementById('skeleton').classList.remove('show');
             document.getElementById('content').innerHTML = html;
             document.getElementById('content').classList.add('loaded');
+            
+            // Create short link after content is loaded
+            if (trackData) {
+                const originalUrl = '<?= htmlspecialchars($originalUrl ?? '') ?>';
+                const cleanUrl = originalUrl.replace(/^https?:\/\//, '');
+                createShortLink(cleanUrl, trackData.name, trackData.artist, trackData.albumArt);
+            }
         })
         .catch(error => {
             document.getElementById('skeleton').classList.remove('show');
@@ -249,6 +261,8 @@
         document.getElementById('skeleton').classList.add('show');
         document.getElementById('content').style.display = 'none';
         
+        let trackData = null; // Store track data for short link creation
+        
         // Fetch the track info and lazy content
         fetch('/?api=track-info', {
             method: 'POST',
@@ -258,6 +272,9 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Store track data for later use
+                trackData = data.track;
+                
                 // Check if user has preference and should redirect
                 if (data.hasPreference && data.redirectUrl) {
                     // Update URL before redirect
@@ -291,6 +308,11 @@
             document.getElementById('content').innerHTML = html;
             document.getElementById('content').classList.add('loaded');
             document.getElementById('content').style.display = 'block';
+            
+            // Create short link after content is loaded
+            if (trackData) {
+                createShortLink(cleanUrl, trackData.name, trackData.artist, trackData.albumArt);
+            }
         })
         .catch(error => {
             document.getElementById('skeleton').classList.remove('show');
@@ -301,8 +323,8 @@
     }
     
     function copyToClipboard() {
-        const currentUrl = window.location.href;
-        navigator.clipboard.writeText(currentUrl).then(() => {
+        const urlToCopy = shortUrl || window.location.href;
+        navigator.clipboard.writeText(urlToCopy).then(() => {
             const shareBtn = document.querySelector('.cp-btn');
             const originalText = shareBtn.innerHTML;
             
@@ -315,7 +337,7 @@
             }, 1000);
         }).catch(() => {
             const textArea = document.createElement('textarea');
-            textArea.value = window.location.href;
+            textArea.value = urlToCopy;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
@@ -326,6 +348,46 @@
             setTimeout(() => {
                 shareBtn.innerHTML = 'Copy';
             }, 1000);
+        });
+    }
+    
+    let shortUrl = null;
+    
+    function createShortLink(originalUrl, trackName, artistName, albumArt) {
+        fetch('/?api=create-short-link', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: originalUrl,
+                trackName: trackName,
+                artistName: artistName,
+                albumArt: albumArt
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                shortUrl = data.short_url;
+                const shareBtn = document.querySelector('.cp-btn');
+                if (shareBtn) shareBtn.style.display = 'block';
+                
+                // Update input field to show the short link
+                document.getElementById('musicUrl').value = data.short_url;
+            } else {
+                // Fallback to current URL if short link creation fails
+                shortUrl = window.location.href;
+                const shareBtn = document.querySelector('.cp-btn');
+                if (shareBtn) shareBtn.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            // Fallback to current URL on error
+            shortUrl = window.location.href;
+            const shareBtn = document.querySelector('.cp-btn');
+            if (shareBtn) shareBtn.style.display = 'block';
+            console.error('Short link creation error:', error);
         });
     }
     
