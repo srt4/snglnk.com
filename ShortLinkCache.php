@@ -87,8 +87,12 @@ class ShortLinkCache {
         // Remove protocol if present
         $url = preg_replace('/^https?:\/\//', '', $url);
         
+        // Debug: log the URL we're trying to match
+        error_log("ShortLinkCache: Trying to extract track ID from: " . $url);
+        
         // Spotify: open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh
         if (preg_match('/spotify\.com\/track\/([a-zA-Z0-9]+)/', $url, $matches)) {
+            error_log("ShortLinkCache: Extracted Spotify track ID: " . $matches[1]);
             return $matches[1];
         }
         
@@ -107,6 +111,7 @@ class ShortLinkCache {
             return $matches[1];
         }
         
+        error_log("ShortLinkCache: No track ID found, returning null");
         return null;
     }
     

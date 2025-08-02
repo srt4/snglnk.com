@@ -198,41 +198,6 @@ if (isset($_GET['cache_stats'])) {
     exit();
 }
 
-// Handle test endpoint for track ID extraction
-if (isset($_GET['api']) && $_GET['api'] === 'test-track-id') {
-    header('Content-Type: application/json');
-    
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
-        exit();
-    }
-    
-    $input = json_decode(file_get_contents('php://input'), true);
-    if (!isset($input['url'])) {
-        echo json_encode(['success' => false, 'error' => 'URL is required']);
-        exit();
-    }
-    
-    $originalUrl = $input['url'];
-    
-    // Test track ID extraction
-    $reflection = new ReflectionClass($shortLinks);
-    $method = $reflection->getMethod('extractTrackId');
-    $method->setAccessible(true);
-    $trackId = $method->invoke($shortLinks, $originalUrl);
-    
-    // Test short code generation
-    $shortCode = $shortLinks->generatePrefixedShortCode($originalUrl);
-    
-    echo json_encode([
-        'success' => true,
-        'original_url' => $originalUrl,
-        'extracted_track_id' => $trackId,
-        'generated_short_code' => $shortCode
-    ]);
-    exit();
-}
 
 // Handle short link creation
 if (isset($_GET['api']) && $_GET['api'] === 'create-short-link') {
