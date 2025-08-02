@@ -67,68 +67,29 @@ class ShortLinkCache {
         return $code;
     }
     
-    public function generatePrefixedShortCode($originalUrl) {
+    public function generatePrefixedShortCode() {
         $prefixes = ['s', 'a', 'y']; // snglnk letters
-        
-        // Extract track ID from the URL
-        $trackId = $this->extractTrackId($originalUrl);
-        if ($trackId) {
-            $prefix = $prefixes[array_rand($prefixes)];
-            return $prefix . '/' . $trackId;
-        }
-        
-        // Fallback to random code if we can't extract ID
         $prefix = $prefixes[array_rand($prefixes)];
-        $id = $this->generateShortCode(5);
+        $id = $this->generateShortCode(5); // shorter ID since we have prefix
+        
         return $prefix . '/' . $id;
     }
     
-    private function extractTrackId($url) {
-        // Remove protocol if present
-        $url = preg_replace('/^https?:\/\//', '', $url);
-        
-        // Debug: log the URL we're trying to match
-        error_log("ShortLinkCache: Trying to extract track ID from: " . $url);
-        
-        // Spotify: open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh
-        if (preg_match('/spotify\.com\/track\/([a-zA-Z0-9]+)/', $url, $matches)) {
-            error_log("ShortLinkCache: Extracted Spotify track ID: " . $matches[1]);
-            return $matches[1];
-        }
-        
-        // YouTube Music: music.youtube.com/watch?v=dQw4w9WgXcQ
-        if (preg_match('/music\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/', $url, $matches)) {
-            return $matches[1];
-        }
-        
-        // Apple Music: music.apple.com/us/album/song-name/1234567890?i=0987654321
-        if (preg_match('/music\.apple\.com\/.*\/([0-9]+)\?i=([0-9]+)/', $url, $matches)) {
-            return $matches[2]; // Use the track ID part
-        }
-        
-        // Apple Music album format: music.apple.com/us/album/album-name/1234567890
-        if (preg_match('/music\.apple\.com\/.*\/([0-9]+)$/', $url, $matches)) {
-            return $matches[1];
-        }
-        
-        error_log("ShortLinkCache: No track ID found, returning null");
-        return null;
-    }
     
     public function createShortLink($originalUrl, $trackName = null, $artistName = null, $albumArt = null) {
         if (!$this->db) return null;
         
-        // Temporarily disable cache check for debugging
-        // $existing = $this->getByUrl($originalUrl);
-        // if ($existing) {
-        //     return $existing['short_code'];
-        // }
+        // Check if URL already exists
+        $existing = $this->getByUrl($originalUrl);
+        if ($existing) {
+            return $existing['short_code'];
+        }
         
         $attempts = 0;
         $maxAttempts = 10;
         
         while ($attempts < $maxAttempts) {
-            $shortCode = $this->generatePrefixedShortCode($originalUrl);
+            $shortCode = $this->generatePrefixedShortCode();
             
             try {
                 $stmt = $this->db->prepare("INSERT INTO shortlinks (short_code, original_url, track_name, artist_name, album_art, created_at) VALUES (?, ?, ?, ?, ?, ?)");
