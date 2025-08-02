@@ -67,29 +67,73 @@ class ShortLinkCache {
         return $code;
     }
     
-    public function generatePrefixedShortCode() {
+    public function generatePrefixedShortCode($originalUrl) {
+        // Extract track ID from the URL
+        $trackId = $this->extractTrackId($originalUrl);
+        if ($trackId) {
+            $provider = $this->getProviderPrefix($originalUrl);
+            return $provider . '/' . $trackId;
+        }
+        
+        // Fallback to random code if we can't extract ID
         $prefixes = ['s', 'a', 'y']; // snglnk letters
         $prefix = $prefixes[array_rand($prefixes)];
-        $id = $this->generateShortCode(5); // shorter ID since we have prefix
-        
+        $id = $this->generateShortCode(5);
         return $prefix . '/' . $id;
+    }
+    
+    private function getProviderPrefix($url) {
+        if (strpos($url, 'spotify.com') !== false) return 's';
+        if (strpos($url, 'youtube.com') !== false) return 'y';  
+        if (strpos($url, 'apple.com') !== false) return 'a';
+        
+        // Default fallback
+        $prefixes = ['s', 'a', 'y'];
+        return $prefixes[array_rand($prefixes)];
+    }
+    
+    private function extractTrackId($url) {
+        // Remove protocol if present
+        $url = preg_replace('/^https?:\/\//', '', $url);
+        
+        // Spotify: open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh
+        if (preg_match('/spotify\.com\/track\/([a-zA-Z0-9]+)/', $url, $matches)) {
+            return $matches[1];
+        }
+        
+        // YouTube Music: music.youtube.com/watch?v=dQw4w9WgXcQ
+        if (preg_match('/music\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/', $url, $matches)) {
+            return $matches[1];
+        }
+        
+        // Apple Music: music.apple.com/us/album/song-name/1234567890?i=0987654321
+        if (preg_match('/music\.apple\.com\/.*\/([0-9]+)\?i=([0-9]+)/', $url, $matches)) {
+            return $matches[2]; // Use the track ID part
+        }
+        
+        // Apple Music album format: music.apple.com/us/album/album-name/1234567890
+        if (preg_match('/music\.apple\.com\/.*\/([0-9]+)$/', $url, $matches)) {
+            return $matches[1];
+        }
+        
+        return null;
     }
     
     
     public function createShortLink($originalUrl, $trackName = null, $artistName = null, $albumArt = null) {
         if (!$this->db) return null;
         
-        // Check if URL already exists
-        $existing = $this->getByUrl($originalUrl);
-        if ($existing) {
-            return $existing['short_code'];
-        }
+        // Skip cache check for now to test new track ID extraction
+        // $existing = $this->getByUrl($originalUrl);
+        // if ($existing) {
+        //     return $existing['short_code'];
+        // }
         
         $attempts = 0;
         $maxAttempts = 10;
         
         while ($attempts < $maxAttempts) {
-            $shortCode = $this->generatePrefixedShortCode();
+            $shortCode = $this->generatePrefixedShortCode($originalUrl);
             
             try {
                 $stmt = $this->db->prepare("INSERT INTO shortlinks (short_code, original_url, track_name, artist_name, album_art, created_at) VALUES (?, ?, ?, ?, ?, ?)");
