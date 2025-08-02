@@ -67,12 +67,47 @@ class ShortLinkCache {
         return $code;
     }
     
-    public function generatePrefixedShortCode() {
+    public function generatePrefixedShortCode($originalUrl) {
         $prefixes = ['s', 'a', 'y']; // snglnk letters
-        $prefix = $prefixes[array_rand($prefixes)];
-        $id = $this->generateShortCode(5); // shorter ID since we have prefix
         
+        // Extract track ID from the URL
+        $trackId = $this->extractTrackId($originalUrl);
+        if ($trackId) {
+            $prefix = $prefixes[array_rand($prefixes)];
+            return $prefix . '/' . $trackId;
+        }
+        
+        // Fallback to random code if we can't extract ID
+        $prefix = $prefixes[array_rand($prefixes)];
+        $id = $this->generateShortCode(5);
         return $prefix . '/' . $id;
+    }
+    
+    private function extractTrackId($url) {
+        // Remove protocol if present
+        $url = preg_replace('/^https?:\/\//', '', $url);
+        
+        // Spotify: open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh
+        if (preg_match('/spotify\.com\/track\/([a-zA-Z0-9]+)/', $url, $matches)) {
+            return $matches[1];
+        }
+        
+        // YouTube Music: music.youtube.com/watch?v=dQw4w9WgXcQ
+        if (preg_match('/music\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/', $url, $matches)) {
+            return $matches[1];
+        }
+        
+        // Apple Music: music.apple.com/us/album/song-name/1234567890?i=0987654321
+        if (preg_match('/music\.apple\.com\/.*\/([0-9]+)\?i=([0-9]+)/', $url, $matches)) {
+            return $matches[2]; // Use the track ID part
+        }
+        
+        // Apple Music album format: music.apple.com/us/album/album-name/1234567890
+        if (preg_match('/music\.apple\.com\/.*\/([0-9]+)$/', $url, $matches)) {
+            return $matches[1];
+        }
+        
+        return null;
     }
     
     public function createShortLink($originalUrl, $trackName = null, $artistName = null, $albumArt = null) {
@@ -88,7 +123,7 @@ class ShortLinkCache {
         $maxAttempts = 10;
         
         while ($attempts < $maxAttempts) {
-            $shortCode = $this->generatePrefixedShortCode();
+            $shortCode = $this->generatePrefixedShortCode($originalUrl);
             
             try {
                 $stmt = $this->db->prepare("INSERT INTO shortlinks (short_code, original_url, track_name, artist_name, album_art, created_at) VALUES (?, ?, ?, ?, ?, ?)");
