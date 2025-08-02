@@ -13,22 +13,67 @@
     <meta property="og:site_name" content="snglnk">
     
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; text-align: center; font-size: 18px; }
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --card-bg: #f5f5f5;
+            --border-color: #ddd;
+            --input-bg: #ffffff;
+            --shimmer-start: #e0e0e0;
+            --shimmer-mid: #f0f0f0;
+            --shimmer-end: #e0e0e0;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+            --input-bg: #333333;
+            --shimmer-start: #404040;
+            --shimmer-mid: #505050;
+            --shimmer-end: #404040;
+        }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 100px auto; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 18px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
         @media (max-width: 768px) {
             body { margin: 0 auto; padding: 15px; }
             h1 { margin-top: 0; }
+            h2 { margin: 0; }
+            p { margin: 0.3em 0; }
             .track-preview { margin: 20px 0; padding: 15px; }
             .album-art { width: 120px; height: 120px; margin: 5px auto 5px auto; }
             .providers { margin: 10px 0; gap: 12px; }
         }
         .input-container { margin: 30px 0; display: -webkit-flex; display: -moz-flex; display: flex; -webkit-align-items: center; -moz-align-items: center; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
         .input-container > * + * { margin-left: 10px; }
-        .url-input { -webkit-flex: 1; -moz-flex: 1; flex: 1; padding: 18px; font-size: 18px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .url-input { 
+            -webkit-flex: 1; -moz-flex: 1; flex: 1; 
+            padding: 18px; font-size: 18px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 8px; box-sizing: border-box;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
         .url-input:focus { outline: none; border-color: #007acc; }
         .cp-btn { padding: 18px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; display: none; transition: all 0.1s ease; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 90px; transform: scale(1); }
         .cp-btn:hover { background: #1e7e34; transform: scale(1.02); }
         .cp-btn:active { transform: scale(0.98); }
-        .track-preview { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; opacity: 0; transition: opacity 0.2s ease; }
+        .track-preview { 
+            margin: 30px 0; padding: 20px; 
+            background: var(--card-bg); 
+            border-radius: 8px; display: none; opacity: 0; 
+            transition: opacity 0.2s ease; 
+        }
         .track-preview.show { opacity: 1; }
         .loading { display: none; color: #666; font-size: 24px; }
         .loading::after {
@@ -42,13 +87,18 @@
             75% { content: '●●●'; }
             100% { content: ''; }
         }
-        .skeleton { margin: 30px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; display: none; opacity: 0; transition: opacity 0.2s ease; }
+        .skeleton { 
+            margin: 30px 0; padding: 20px; 
+            background: var(--card-bg); 
+            border-radius: 8px; display: none; opacity: 0; 
+            transition: opacity 0.2s ease; 
+        }
         .skeleton.show { display: block; opacity: 1; }
-        .skeleton-image { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        .skeleton-title { height: 32px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 15px auto; width: 80%; }
-        .skeleton-artist { height: 20px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 10px auto; width: 60%; }
+        .skeleton-image { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton-title { height: 32px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 15px auto; width: 80%; }
+        .skeleton-artist { height: 20px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 10px auto; width: 60%; }
         .skeleton-providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
-        .skeleton-provider { height: 56px; background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        .skeleton-provider { height: 56px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
         @keyframes shimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
@@ -68,6 +118,7 @@
     </style>
 </head>
 <body>
+    
     <h1>snglnk</h1>
     <p>Paste any music link and choose your preferred music app</p>
     
@@ -104,6 +155,25 @@
     </div>
     
     <script>
+    // Dark mode functionality - system detection only
+    function initTheme() {
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = systemDark ? 'dark' : 'light';
+        setTheme(theme);
+        
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            setTheme(e.matches ? 'dark' : 'light');
+        });
+    }
+    
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+    
+    // Initialize theme on page load
+    initTheme();
+    
     let debounceTimer;
     
     document.getElementById('musicUrl').addEventListener('input', function() {
@@ -148,13 +218,6 @@
             document.getElementById('skeleton').classList.remove('show');
             
             if (data.success) {
-                // Show share button
-                document.getElementById('shareBtn').style.display = 'block';
-                
-                // Update browser URL
-                const cleanUrl = url.replace(/^https?:\/\//, '');
-                history.pushState({}, '', '/' + cleanUrl);
-                
                 // Log performance metrics
                 if (data.perf) {
                     console.log(`PERF: Total=${data.perf.total}ms Parse=${data.perf.parse}ms API=${data.perf.api}ms Platform=${data.perf.platform}`);
@@ -162,12 +225,15 @@
                 
                 // Check if user has preference and redirect immediately
                 if (data.hasPreference && data.redirectUrl) {
+                    // Update URL before redirect
+                    const cleanUrl = url.replace(/^https?:\/\//, '');
+                    history.pushState({}, '', '/' + cleanUrl);
                     window.location.href = data.redirectUrl;
                     return;
                 }
                 
                 // Show track preview with smooth animation
-                showTrackPreview(data.track);
+                showTrackPreview(data.track, url);
             } else {
                 // Hide share button on error
                 document.getElementById('shareBtn').style.display = 'none';
@@ -180,7 +246,7 @@
         });
     }
     
-    function showTrackPreview(track) {
+    function showTrackPreview(track, url) {
         document.getElementById('trackName').textContent = track.name;
         document.getElementById('artistName').textContent = 'by ' + track.artist;
         
@@ -207,6 +273,13 @@
         preview.style.display = 'block';
         // Trigger animation after display
         setTimeout(() => preview.classList.add('show'), 10);
+        
+        // Only update URL and show share button after successful preview
+        const cleanUrl = url.replace(/^https?:\/\//, '');
+        history.pushState({}, '', '/' + cleanUrl);
+        
+        // Create short link and show share button
+        createShortLink(cleanUrl, track.name, track.artist, track.albumArt);
     }
     
     function setPreference(provider) {
@@ -215,9 +288,47 @@
         }
     }
     
+    let shortUrl = null;
+    
+    function createShortLink(originalUrl, trackName, artistName, albumArt) {
+        fetch('/?api=create-short-link', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: originalUrl,
+                trackName: trackName,
+                artistName: artistName,
+                albumArt: albumArt
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                shortUrl = data.short_url;
+                document.getElementById('shareBtn').style.display = 'block';
+                
+                // Update input field to show the short link
+                document.getElementById('musicUrl').value = data.short_url;
+            } else {
+                // Fallback to current URL if short link creation fails
+                shortUrl = window.location.href;
+                document.getElementById('shareBtn').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            // Fallback to current URL on error
+            shortUrl = window.location.href;
+            document.getElementById('shareBtn').style.display = 'block';
+            console.error('Short link creation error:', error);
+        });
+    }
+    
     function copyToClipboard() {
-        const currentUrl = window.location.href;
-        navigator.clipboard.writeText(currentUrl).then(() => {
+        const urlToCopy = shortUrl || window.location.href;
+        
+        navigator.clipboard.writeText(urlToCopy).then(() => {
             // Show temporary feedback
             const shareBtn = document.getElementById('shareBtn');
             const originalText = shareBtn.innerHTML;
@@ -232,7 +343,7 @@
         }).catch(() => {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
-            textArea.value = window.location.href;
+            textArea.value = urlToCopy;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');

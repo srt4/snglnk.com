@@ -5,13 +5,15 @@ $requireStart = microtime(true);
 require_once 'providers/ProviderManager.php';
 require_once 'Template.php';
 require_once 'TrackCache.php';
+require_once 'ShortLinkCache.php';
 $requireEnd = microtime(true);
 
-// Initialize provider manager and template engine
+// Initialize provider manager, template engine, and short links
 $initStart = microtime(true);
 $providerManager = new ProviderManager();
 $musicProviders = $providerManager->getMainProviders(); // Only show main providers on home screen
 $template = new Template();
+$shortLinks = new ShortLinkCache();
 $initEnd = microtime(true);
 
 // Function to get user's preferred music provider from cookie
@@ -196,6 +198,41 @@ if (isset($_GET['cache_stats'])) {
     exit();
 }
 
+// Handle short link creation
+if (isset($_GET['api']) && $_GET['api'] === 'create-short-link') {
+    header('Content-Type: application/json');
+    
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+        exit();
+    }
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!isset($input['url'])) {
+        echo json_encode(['success' => false, 'error' => 'URL is required']);
+        exit();
+    }
+    
+    $originalUrl = $input['url'];
+    $trackName = $input['trackName'] ?? null;
+    $artistName = $input['artistName'] ?? null;
+    $albumArt = $input['albumArt'] ?? null;
+    
+    $shortCode = $shortLinks->createShortLink($originalUrl, $trackName, $artistName, $albumArt);
+    
+    if ($shortCode) {
+        echo json_encode([
+            'success' => true,
+            'short_code' => $shortCode,
+            'short_url' => 'https://snglnk.com/' . $shortCode
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Failed to create short link']);
+    }
+    exit();
+}
+
 // Get the music URL from the URL path
 $urlParseStart = microtime(true);
 $fullUrl = $_SERVER['REQUEST_URI'];
@@ -210,6 +247,26 @@ $urlParseEnd = microtime(true);
 if (empty($musicUrl) || $musicUrl === '') {
     $template->display('homepage', []);
     exit();
+}
+
+// Handle short link redirects (s/xxxxx, a/xxxxx, y/xxxxx)
+if (preg_match('/^([say])\/([a-zA-Z0-9]+)$/', $musicUrl, $matches)) {
+    $shortCode = $matches[1] . '/' . $matches[2];
+    $shortLinkData = $shortLinks->getByCode($shortCode);
+    
+    if ($shortLinkData) {
+        // Increment click counter
+        $shortLinks->incrementClicks($shortCode);
+        
+        // Redirect to the original URL
+        header("Location: /" . $shortLinkData['original_url']);
+        exit();
+    } else {
+        // Short link not found
+        http_response_code(404);
+        echo "Short link not found";
+        exit();
+    }
 }
 
 // Function to detect social media crawlers/bots

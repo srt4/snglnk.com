@@ -24,12 +24,45 @@
     <meta name="twitter:description" content="by <?= htmlspecialchars($artistName) ?> • Choose your music app">
     
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; font-size: 18px; }
-        @media (max-width: 768px) {
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --card-bg: #f5f5f5;
+            --border-color: #ddd;
+            --input-bg: #ffffff;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+            --input-bg: #333333;
+        }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 18px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        .track-info { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 30px;
+        }
+        @media (max-width: 1024px) {
             body { margin: 0 auto; padding: 15px; }
             h1 { margin-top: 0; }
+            h2 { margin: 0; }
+            p { margin: 0.3em 0; }
+            .track-info { margin-bottom: 5px !important; }
         }
-        .track-info { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
         .provider { padding: 15px; color: white; text-decoration: none; border-radius: 8px; transition: background 0.2s; }
         .provider.spotify { background: #1db954; }
@@ -49,6 +82,7 @@
     </style>
 </head>
 <body>
+    
     <h1>snglnk</h1>
     
     <div class="input-container">
@@ -78,6 +112,25 @@
     </div>
     
     <script>
+    // Dark mode functionality - system detection only
+    function initTheme() {
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = systemDark ? 'dark' : 'light';
+        setTheme(theme);
+        
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            setTheme(e.matches ? 'dark' : 'light');
+        });
+    }
+    
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+    
+    // Initialize theme on page load
+    initTheme();
+
     function setPreference(provider) {
         if (document.getElementById("remember").checked) {
             document.cookie = "music_provider=" + provider + "; max-age=" + (365*24*60*60) + "; path=/";
