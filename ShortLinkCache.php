@@ -83,11 +83,12 @@ class ShortLinkCache {
     }
     
     private function getProviderPrefix($url) {
+        // Force cache refresh with comment change
         if (strpos($url, 'spotify.com') !== false) return 's';
         if (strpos($url, 'youtube.com') !== false) return 'y';  
         if (strpos($url, 'apple.com') !== false) return 'a';
         
-        // Default fallback
+        // Default fallback to random prefix
         $prefixes = ['s', 'a', 'y'];
         return $prefixes[array_rand($prefixes)];
     }
