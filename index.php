@@ -1,4 +1,5 @@
 <?php
+// CACHE CLEAR FORCED - <?= date('Y-m-d H:i:s') ?>
 $startTime = microtime(true);
 
 $requireStart = microtime(true);

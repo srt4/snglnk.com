@@ -1,5 +1,5 @@
 <?php
-
+// FORCE OPCACHE REFRESH NOW
 class ShortLinkCache {
     private $db;
     private $dbPath;
