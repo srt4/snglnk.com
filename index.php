@@ -220,11 +220,20 @@ if (isset($_GET['api']) && $_GET['api'] === 'create-short-link') {
     $artistName = $input['artistName'] ?? null;
     $albumArt = $input['albumArt'] ?? null;
     
-    // Debug: Test track ID extraction
-    $reflection = new ReflectionClass($shortLinks);
-    $extractMethod = $reflection->getMethod('extractTrackId');
-    $extractMethod->setAccessible(true);
-    $extractedId = $extractMethod->invoke($shortLinks, $originalUrl);
+    // Quick debug test - just return extracted ID
+    if ($originalUrl === 'debug-extract-test') {
+        $reflection = new ReflectionClass($shortLinks);
+        $extractMethod = $reflection->getMethod('extractTrackId');
+        $extractMethod->setAccessible(true);
+        $extractedId = $extractMethod->invoke($shortLinks, 'open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh');
+        
+        echo json_encode([
+            'success' => true,
+            'debug_extracted_id' => $extractedId,
+            'test_url' => 'open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh'
+        ]);
+        exit();
+    }
     
     $shortCode = $shortLinks->createShortLink($originalUrl, $trackName, $artistName, $albumArt);
     
@@ -232,9 +241,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'create-short-link') {
         echo json_encode([
             'success' => true,
             'short_code' => $shortCode,
-            'short_url' => 'https://snglnk.com/' . $shortCode,
-            'debug_extracted_id' => $extractedId,
-            'debug_original_url' => $originalUrl
+            'short_url' => 'https://snglnk.com/' . $shortCode
         ]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Failed to create short link']);
