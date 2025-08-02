@@ -124,11 +124,11 @@ class ShortLinkCache {
     public function createShortLink($originalUrl, $trackName = null, $artistName = null, $albumArt = null) {
         if (!$this->db) return null;
         
-        // Skip cache check for now to test new track ID extraction
-        // $existing = $this->getByUrl($originalUrl);
-        // if ($existing) {
-        //     return $existing['short_code'];
-        // }
+        // Check if URL already exists
+        $existing = $this->getByUrl($originalUrl);
+        if ($existing) {
+            return $existing['short_code'];
+        }
         
         $attempts = 0;
         $maxAttempts = 10;
