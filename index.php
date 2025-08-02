@@ -220,13 +220,21 @@ if (isset($_GET['api']) && $_GET['api'] === 'create-short-link') {
     $artistName = $input['artistName'] ?? null;
     $albumArt = $input['albumArt'] ?? null;
     
+    // Debug: Test track ID extraction
+    $reflection = new ReflectionClass($shortLinks);
+    $extractMethod = $reflection->getMethod('extractTrackId');
+    $extractMethod->setAccessible(true);
+    $extractedId = $extractMethod->invoke($shortLinks, $originalUrl);
+    
     $shortCode = $shortLinks->createShortLink($originalUrl, $trackName, $artistName, $albumArt);
     
     if ($shortCode) {
         echo json_encode([
             'success' => true,
             'short_code' => $shortCode,
-            'short_url' => 'https://snglnk.com/' . $shortCode
+            'short_url' => 'https://snglnk.com/' . $shortCode,
+            'debug_extracted_id' => $extractedId,
+            'debug_original_url' => $originalUrl
         ]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Failed to create short link']);
