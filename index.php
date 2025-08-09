@@ -252,17 +252,16 @@ if (empty($musicUrl) || $musicUrl === '') {
 }
 
 // Handle short link redirects (s/xxxxx, a/xxxxx, y/xxxxx)
-if (preg_match('/^([say])\/([a-zA-Z0-9]+)$/', $musicUrl, $matches)) {
+if (preg_match('/^([say])\/([a-zA-Z0-9_-]+)$/', $musicUrl, $matches)) {
     $shortCode = $matches[1] . '/' . $matches[2];
     $shortLinkData = $shortLinks->getByCode($shortCode);
     
     if ($shortLinkData) {
-        // Increment click counter
+        // Increment click counter (no-op now, but keeps compatibility)
         $shortLinks->incrementClicks($shortCode);
         
-        // Redirect to the original URL
-        header("Location: /" . $shortLinkData['original_url']);
-        exit();
+        // Set the music URL to the reconstructed original URL and continue processing
+        $musicUrl = $shortLinkData['original_url'];
     } else {
         // Short link not found
         http_response_code(404);
