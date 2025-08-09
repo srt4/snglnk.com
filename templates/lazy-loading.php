@@ -194,6 +194,14 @@
             // Store track data for later use
             trackData = data.track;
             
+            // Update browser URL to short link if available
+            if (data.shortCode) {
+                history.pushState({}, '', '/' + data.shortCode);
+                shortUrl = 'https://snglnk.com/' + data.shortCode;
+                // Update input field to show the short link
+                document.getElementById('musicUrl').value = shortUrl;
+            }
+            
             // Log performance metrics
             if (data.perf) {
                 console.log(`PERF LAZY: Total=${data.perf.total}ms Parse=${data.perf.parse}ms API=${data.perf.api}ms Platform=${data.perf.platform}`);
@@ -217,13 +225,6 @@
             document.getElementById('skeleton').classList.remove('show');
             document.getElementById('content').innerHTML = html;
             document.getElementById('content').classList.add('loaded');
-            
-            // Create short link after content is loaded
-            if (trackData) {
-                const originalUrl = '<?= htmlspecialchars($originalUrl ?? '') ?>';
-                const cleanUrl = originalUrl.replace(/^https?:\/\//, '');
-                createShortLink(cleanUrl, trackData.name, trackData.artist, trackData.albumArt);
-            }
         })
         .catch(error => {
             document.getElementById('skeleton').classList.remove('show');
@@ -277,11 +278,21 @@
                 
                 // Check if user has preference and should redirect
                 if (data.hasPreference && data.redirectUrl) {
-                    // Update URL before redirect
-                    const cleanUrl = url.replace(/^https?:\/\//, '');
-                    history.pushState({}, '', '/' + cleanUrl);
+                    // Update URL to short link before redirect if available
+                    if (data.shortCode) {
+                        history.pushState({}, '', '/' + data.shortCode);
+                    } else {
+                        const cleanUrl = url.replace(/^https?:\/\//, '');
+                        history.pushState({}, '', '/' + cleanUrl);
+                    }
                     window.location.href = data.redirectUrl;
                     return;
+                }
+                
+                // Update browser URL to short link if available
+                if (data.shortCode) {
+                    history.pushState({}, '', '/' + data.shortCode);
+                    shortUrl = 'https://snglnk.com/' + data.shortCode;
                 }
                 
                 // Load the lazy content
@@ -300,18 +311,14 @@
         })
         .then(response => response.text())
         .then(html => {
-            // Content loaded successfully - NOW update URL
-            const cleanUrl = url.replace(/^https?:\/\//, '');
-            history.pushState({}, '', '/' + cleanUrl);
-            
             document.getElementById('skeleton').classList.remove('show');
             document.getElementById('content').innerHTML = html;
             document.getElementById('content').classList.add('loaded');
             document.getElementById('content').style.display = 'block';
             
-            // Create short link after content is loaded
-            if (trackData) {
-                createShortLink(cleanUrl, trackData.name, trackData.artist, trackData.albumArt);
+            // Update input field to show the short link if available
+            if (shortUrl) {
+                document.getElementById('musicUrl').value = shortUrl;
             }
         })
         .catch(error => {

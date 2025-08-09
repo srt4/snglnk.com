@@ -1,5 +1,5 @@
 <?php
-// CACHE CLEAR FORCED - <?= date('Y-m-d H:i:s') ?>
+// CACHE CLEAR FORCED
 $startTime = microtime(true);
 
 $requireStart = microtime(true);
@@ -135,6 +135,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
     // Check if user has a preference
     $userPreference = getUserPreference();
     
+    // Generate short link for this track
+    $shortCode = $shortLinks->createShortLink($apiUrl);
+    
     $response = [
         'success' => true,
         'track' => [
@@ -144,7 +147,8 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
             'providers' => []
         ],
         'hasPreference' => false,
-        'redirectUrl' => null
+        'redirectUrl' => null,
+        'shortCode' => $shortCode
     ];
     
     // Build providers list
