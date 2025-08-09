@@ -5,6 +5,8 @@ require_once 'MusicProvider.php';
 class SpotifyProvider extends MusicProvider {
     private $clientId;
     private $clientSecret;
+    private $accessToken;
+    private $tokenExpiry;
     
     public function __construct() {
         parent::__construct('spotify', 'https://open.spotify.com/search/');
@@ -66,6 +68,11 @@ class SpotifyProvider extends MusicProvider {
     }
     
     private function getAccessToken() {
+        // Check if we have a valid cached token
+        if ($this->accessToken && $this->tokenExpiry && time() < $this->tokenExpiry) {
+            return $this->accessToken;
+        }
+        
         $url = "https://accounts.spotify.com/api/token";
         $headers = [
             'Authorization: Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret)
@@ -85,6 +92,13 @@ class SpotifyProvider extends MusicProvider {
         curl_close($ch);
         
         $result = json_decode($response, true);
-        return $result['access_token'] ?? null;
+        if (isset($result['access_token'])) {
+            $this->accessToken = $result['access_token'];
+            // Cache for 55 minutes (tokens expire in 60 minutes)
+            $this->tokenExpiry = time() + 3300;
+            return $this->accessToken;
+        }
+        
+        return null;
     }
 }
