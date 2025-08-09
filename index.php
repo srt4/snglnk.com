@@ -109,6 +109,11 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
         $apiUrl = $matches[1];
     }
     
+    // Clean tracking parameters from URL (same as main flow)
+    $trackCache = new TrackCache();
+    $cleanedUrl = $trackCache->cleanUrl('https://' . $apiUrl);
+    $apiUrl = preg_replace('/^https?:\/\//', '', $cleanedUrl);
+    
     // Parse the URL
     $ajaxParseStart = microtime(true);
     $parsedTrack = $providerManager->parseUrl($apiUrl);
