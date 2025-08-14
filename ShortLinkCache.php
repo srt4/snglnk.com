@@ -74,7 +74,7 @@ class ShortLinkCache {
             case 'y': // YouTube
                 return ['original_url' => "music.youtube.com/watch?v={$trackId}"];
             case 'a': // Apple Music
-                return ['original_url' => "music.apple.com/us/album/album/{$trackId}"];
+                return ['original_url' => "music.apple.com/us/album/1/{$trackId}?i={$trackId}"];
             default:
                 return null;
         }

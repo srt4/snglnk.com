@@ -131,7 +131,13 @@
     
     <div class="input-container">
         <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" id="musicUrl" placeholder="Paste a different music link here...">
-        <button class="cp-btn" onclick="copyToClipboard()" title="Copy link">Copy</button>
+        <button class="cp-btn" onclick="copyToClipboard()" title="Copy short link">Copy</button>
+    </div>
+    
+    <div class="original-link-container" id="originalLinkContainer" style="display: none;">
+        <div style="margin: 10px 0; color: #666; font-size: 14px;">
+            <a href="javascript:void(0)" onclick="copyOriginalLink()" style="color: #666; text-decoration: underline; cursor: pointer;">Copy original link</a>
+        </div>
     </div>
     
     <div class="loading" id="loading"></div>
@@ -194,12 +200,19 @@
             // Store track data for later use
             trackData = data.track;
             
+            // Update original URL from API response
+            if (data.originalUrl) {
+                originalLinkUrl = data.originalUrl;
+            }
+            
             // Update browser URL to short link if available
             if (data.shortCode) {
                 history.pushState({}, '', '/' + data.shortCode);
                 shortUrl = 'https://snglnk.com/' + data.shortCode;
                 // Update input field to show the short link
                 document.getElementById('musicUrl').value = shortUrl;
+                // Show original link option
+                document.getElementById('originalLinkContainer').style.display = 'block';
             }
             
             // Log performance metrics
@@ -261,6 +274,10 @@
     function loadLazyContent(url) {
         document.getElementById('skeleton').classList.add('show');
         document.getElementById('content').style.display = 'none';
+        document.getElementById('originalLinkContainer').style.display = 'none';
+        
+        // Update original URL
+        originalLinkUrl = url.replace(/^https?:\/\//, '');
         
         let trackData = null; // Store track data for short link creation
         
@@ -275,6 +292,11 @@
             if (data.success) {
                 // Store track data for later use
                 trackData = data.track;
+                
+                // Update original URL from API response
+                if (data.originalUrl) {
+                    originalLinkUrl = data.originalUrl;
+                }
                 
                 // Check if user has preference and should redirect
                 if (data.hasPreference && data.redirectUrl) {
@@ -293,6 +315,8 @@
                 if (data.shortCode) {
                     history.pushState({}, '', '/' + data.shortCode);
                     shortUrl = 'https://snglnk.com/' + data.shortCode;
+                    // Show original link option
+                    document.getElementById('originalLinkContainer').style.display = 'block';
                 }
                 
                 // Load the lazy content
@@ -319,6 +343,8 @@
             // Update input field to show the short link if available
             if (shortUrl) {
                 document.getElementById('musicUrl').value = shortUrl;
+                // Show original link option
+                document.getElementById('originalLinkContainer').style.display = 'block';
             }
         })
         .catch(error => {
@@ -358,7 +384,37 @@
         });
     }
     
+    function copyOriginalLink() {
+        const urlToCopy = 'https://' + originalLinkUrl;
+        navigator.clipboard.writeText(urlToCopy).then(() => {
+            const link = document.querySelector('#originalLinkContainer a');
+            const originalText = link.innerHTML;
+            
+            link.innerHTML = 'Copied!';
+            link.style.color = '#28a745';
+            
+            setTimeout(() => {
+                link.innerHTML = originalText;
+                link.style.color = '#666';
+            }, 1000);
+        }).catch(() => {
+            const textArea = document.createElement('textarea');
+            textArea.value = urlToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const link = document.querySelector('#originalLinkContainer a');
+            link.innerHTML = 'Copied!';
+            setTimeout(() => {
+                link.innerHTML = 'Copy original link';
+            }, 1000);
+        });
+    }
+    
     let shortUrl = null;
+    let originalLinkUrl = '<?= htmlspecialchars($originalUrl ?? '') ?>';
     
     function createShortLink(originalUrl, trackName, artistName, albumArt) {
         fetch('/?api=create-short-link', {

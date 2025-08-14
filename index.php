@@ -153,7 +153,8 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
         ],
         'hasPreference' => false,
         'redirectUrl' => null,
-        'shortCode' => $shortCode
+        'shortCode' => $shortCode,
+        'originalUrl' => $apiUrl
     ];
     
     // Build providers list
