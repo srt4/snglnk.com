@@ -130,7 +130,6 @@
     
     <div class="header" id="header">
         <h1>snglnk</h1>
-        <p>Paste any music link and choose your preferred music app</p>
     </div>
     
     <div class="input-container">
@@ -201,9 +200,7 @@
         document.getElementById('shareBtn').style.display = 'none';
         
         if (url === '') {
-            // Show header again when input is cleared
-            const header = document.getElementById('header');
-            header.classList.remove('hide');
+            // Just clear the URL, don't redirect
             history.pushState({}, '', '/');
             return;
         }
@@ -260,10 +257,6 @@
     }
     
     function showTrackPreview(track, url) {
-        // Hide header smoothly
-        const header = document.getElementById('header');
-        header.classList.add('hide');
-        
         document.getElementById('trackName').textContent = track.name;
         document.getElementById('artistName').textContent = 'by ' + track.artist;
         
@@ -325,9 +318,6 @@
             if (data.success) {
                 shortUrl = data.short_url;
                 document.getElementById('shareBtn').style.display = 'block';
-                
-                // Update input field to show the short link
-                document.getElementById('musicUrl').value = data.short_url;
             } else {
                 // Fallback to current URL if short link creation fails
                 shortUrl = window.location.href;

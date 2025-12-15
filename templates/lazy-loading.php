@@ -127,7 +127,6 @@
 </head>
 <body>
     
-    <h1>snglnk</h1>
     
     <div class="input-container">
         <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" id="musicUrl" placeholder="Paste a different music link here...">

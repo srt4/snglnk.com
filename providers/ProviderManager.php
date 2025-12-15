@@ -131,4 +131,17 @@ class ProviderManager {
     public function getCacheStats() {
         return $this->cache->getStats();
     }
+
+    public static function fetchUrl($url) {
+        $options = [
+            'http' => [
+                'method' => 'GET',
+                'header' => 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 snglnk/1.0\r\n' .
+                           'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8\r\n' .
+                           'Accept-Language: en-US,en;q=0.9\r\n'
+            ]
+        ];
+        $context = stream_context_create($options);
+        return @file_get_contents($url, false, $context);
+    }
 }
