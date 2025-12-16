@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>snglnk - Universal Music Link Converter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <!-- Open Graph / WhatsApp Preview (generic fallback) -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="snglnk - Universal Music Link Converter">
@@ -11,12 +12,12 @@
     <meta property="og:image" content="https://snglnk.com/og-image.png">
     <meta property="og:url" content="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
     <meta property="og:site_name" content="snglnk">
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="snglnk - Universal Music Link Converter">
     <meta name="twitter:description" content="Paste any music link and choose your preferred music app">
-    
+
     <style>
         :root {
             --bg-color: #ffffff;
@@ -28,7 +29,7 @@
             --shimmer-mid: #f0f0f0;
             --shimmer-end: #e0e0e0;
         }
-        
+
         [data-theme="dark"] {
             --bg-color: #1a1a1a;
             --text-color: #e0e0e0;
@@ -39,108 +40,430 @@
             --shimmer-mid: #505050;
             --shimmer-end: #404040;
         }
-        
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 50px auto; 
-            padding: 20px; 
-            text-align: center; 
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
             font-size: 18px;
             background-color: var(--bg-color);
             color: var(--text-color);
         }
+
         @media (max-width: 1024px) {
-            body { margin: 0 auto; padding: 15px; }
-            h1 { margin-top: 0; }
-            h2 { margin: 0; }
-            p { margin: 0.3em 0; }
-            .track-preview { margin: 20px 0; padding: 15px; }
-            .album-art { width: 120px; height: 120px; margin: 5px auto 5px auto; }
-            .providers { margin: 10px 0; gap: 12px; }
-            .track-info { margin-bottom: 5px !important; }
+            body {
+                margin: 0 auto;
+                padding: 15px;
+            }
+
+            h1 {
+                margin-top: 0;
+            }
+
+            h2 {
+                margin: 0;
+            }
+
+            p {
+                margin: 0.3em 0;
+            }
+
+            .track-preview {
+                margin: 20px 0;
+                padding: 15px;
+            }
+
+            .album-art {
+                width: 120px;
+                height: 120px;
+                margin: 5px auto 5px auto;
+            }
+
+            .providers {
+                margin: 10px 0;
+                gap: 12px;
+            }
+
+            .track-info {
+                margin-bottom: 5px !important;
+            }
         }
-        .input-container { margin: 20px 0; display: -webkit-flex; display: -moz-flex; display: flex; -webkit-align-items: center; -moz-align-items: center; align-items: center; gap: 10px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .input-container > * + * { margin-left: 10px; }
-        .url-input { 
-            -webkit-flex: 1; -moz-flex: 1; flex: 1; 
-            padding: 16px; font-size: 16px; 
-            border: 2px solid var(--border-color); 
-            border-radius: 8px; box-sizing: border-box; 
-            background: var(--input-bg); 
+
+        .input-container {
+            margin: 20px 0;
+            display: -webkit-flex;
+            display: -moz-flex;
+            display: flex;
+            -webkit-align-items: center;
+            -moz-align-items: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .input-container>*+* {
+            margin-left: 10px;
+        }
+
+        .url-input {
+            -webkit-flex: 1;
+            -moz-flex: 1;
+            flex: 1;
+            padding: 16px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: var(--input-bg);
             color: var(--text-color);
         }
-        .url-input:focus { outline: none; border-color: #007acc; }
-        .cp-btn { padding: 16px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.1s ease; display: block !important; -webkit-flex-shrink: 0; -moz-flex-shrink: 0; flex-shrink: 0; min-width: 80px; transform: scale(1); }
-        .cp-btn:hover { background: #1e7e34; transform: scale(1.02); }
-        .cp-btn:active { transform: scale(0.98); }
-        .loading { display: none; color: #666; font-size: 24px; margin: 30px 0; }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+
+        .cp-btn {
+            padding: 16px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.1s ease;
+            display: block !important;
+            -webkit-flex-shrink: 0;
+            -moz-flex-shrink: 0;
+            flex-shrink: 0;
+            min-width: 80px;
+            transform: scale(1);
+        }
+
+        .cp-btn:hover {
+            background: #1e7e34;
+            transform: scale(1.02);
+        }
+
+        .cp-btn:active {
+            transform: scale(0.98);
+        }
+
+        .loading {
+            display: none;
+            color: #666;
+            font-size: 24px;
+            margin: 30px 0;
+        }
+
         .loading::after {
             content: '';
             animation: ellipsis 1.5s infinite;
         }
+
         @keyframes ellipsis {
-            0% { content: ''; }
-            25% { content: '●'; }
-            50% { content: '●●'; }
-            75% { content: '●●●'; }
-            100% { content: ''; }
+            0% {
+                content: '';
+            }
+
+            25% {
+                content: '●';
+            }
+
+            50% {
+                content: '●●';
+            }
+
+            75% {
+                content: '●●●';
+            }
+
+            100% {
+                content: '';
+            }
         }
-        .skeleton { 
-            display: none; 
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 8px; 
+
+        .skeleton {
+            display: none;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 30px;
         }
-        .skeleton.show { display: block; }
-        .skeleton-image { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        .skeleton-title { height: 32px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 15px auto; width: 80%; }
-        .skeleton-artist { height: 20px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin: 10px auto; width: 60%; }
-        .skeleton-providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
-        .skeleton-provider { height: 56px; background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+
+        .skeleton.show {
+            display: block;
+        }
+
+        .skeleton-image {
+            width: 150px;
+            height: 150px;
+            margin: 10px auto;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        .skeleton-title {
+            height: 32px;
+            background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+            margin: 15px auto;
+            width: 80%;
+        }
+
+        .skeleton-artist {
+            height: 20px;
+            background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+            margin: 10px auto;
+            width: 60%;
+        }
+
+        .skeleton-providers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .skeleton-provider {
+            height: 56px;
+            background: linear-gradient(90deg, var(--shimmer-start) 25%, var(--shimmer-mid) 50%, var(--shimmer-end) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
         }
-        .content { opacity: 0; transition: opacity 0.3s ease; }
-        .content.loaded { opacity: 1; }
-        .track-info { 
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 8px; 
+
+        .content {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .content.loaded {
+            opacity: 1;
+        }
+
+        .track-info {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 30px;
         }
-        .album-art { width: 150px; height: 150px; margin: 10px auto; border-radius: 8px; }
-        .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
-        .provider { padding: 18px; color: white; text-decoration: none; border-radius: 8px; transition: all 0.1s ease; font-size: 18px; transform: scale(1); }
-        .provider:hover { transform: scale(1.03); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .provider:active { transform: scale(0.97); }
-        .provider.spotify { background: #1db954; }
-        .provider.spotify:hover { background: #1ed760; }
-        .provider.youtube { background: #ff0000; }
-        .provider.youtube:hover { background: #cc0000; }
-        .provider.apple { background: #000000; }
-        .provider.apple:hover { background: #333333; }
-        .remember { margin-top: 20px; color: #666; }
+
+        .album-art {
+            width: 150px;
+            height: 150px;
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+
+        .providers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .provider {
+            padding: 18px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.1s ease;
+            font-size: 18px;
+            transform: scale(1);
+        }
+
+        .provider:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .provider:active {
+            transform: scale(0.97);
+        }
+
+        .provider.spotify {
+            background: #1db954;
+        }
+
+        .provider.spotify:hover {
+            background: #1ed760;
+        }
+
+        .provider.youtube {
+            background: #ff0000;
+        }
+
+        .provider.youtube:hover {
+            background: #cc0000;
+        }
+
+        .provider.apple {
+            background: #000000;
+        }
+
+        .provider.apple:hover {
+            background: #333333;
+        }
+
+        .remember {
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .qr-btn {
+            padding: 16px 14px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.1s ease;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .qr-btn:hover {
+            background: #5b4cdb;
+            transform: scale(1.02);
+        }
+
+        .qr-btn:active {
+            transform: scale(0.98);
+        }
+
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-modal.show {
+            display: flex;
+        }
+
+        .qr-modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .qr-modal-content #qrcode {
+            margin: 0 auto 15px;
+        }
+
+        .qr-modal-content #qrcode canvas {
+            border-radius: 8px;
+        }
+
+        .qr-hint {
+            color: #888;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .qr-close {
+            padding: 12px 30px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .qr-close:hover {
+            background: #5b4cdb;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        .theme-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
+
 <body>
-    
-    
+
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">🌙</button>
+
+
     <div class="input-container">
-        <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" id="musicUrl" placeholder="Paste a different music link here...">
+        <input type="text" class="url-input" value="<?= htmlspecialchars($originalUrl ?? '') ?>" id="musicUrl"
+            placeholder="Paste a different music link here...">
+        <button class="qr-btn" id="qrBtn" onclick="showQRCode()" title="Show QR Code">QR</button>
         <button class="cp-btn" onclick="copyToClipboard()" title="Copy short link">Copy</button>
     </div>
-    
-    <div class="original-link-container" id="originalLinkContainer" style="display: none;">
-        <div style="margin: 10px 0; color: #666; font-size: 14px;">
-            <a href="javascript:void(0)" onclick="copyOriginalLink()" style="color: #666; text-decoration: underline; cursor: pointer;">Copy original link</a>
+
+    <!-- QR Code Modal -->
+    <div class="qr-modal" id="qrModal" onclick="hideQRCode()">
+        <div class="qr-modal-content" onclick="event.stopPropagation()">
+            <div id="qrcode"></div>
+            <p class="qr-hint">Scan to open on mobile</p>
+            <button class="qr-close" onclick="hideQRCode()">Close</button>
         </div>
     </div>
-    
+
+    <div class="original-link-container" id="originalLinkContainer" style="display: none;">
+        <div style="margin: 10px 0; color: #666; font-size: 14px;">
+            <a href="javascript:void(0)" onclick="copyOriginalLink()"
+                style="color: #666; text-decoration: underline; cursor: pointer;">Copy original link</a>
+        </div>
+    </div>
+
     <div class="loading" id="loading"></div>
-    
+
     <div class="skeleton" id="skeleton">
         <div class="skeleton-image"></div>
         <div class="skeleton-title"></div>
@@ -152,312 +475,347 @@
             <div class="skeleton-provider"></div>
         </div>
     </div>
-    
-    <div class="content" id="content"></div>
-    
-    <script>
-    // Dark mode functionality - system detection only
-    function initTheme() {
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = systemDark ? 'dark' : 'light';
-        setTheme(theme);
-        
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        });
-    }
-    
-    function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-    }
-    
-    // Initialize theme on page load
-    initTheme();
 
-    // Lazy load the full content via AJAX
-    window.addEventListener('load', function() {
-        document.getElementById('skeleton').classList.add('show');
+    <div class="content" id="content"></div>
+
+    <script>
+        // Dark mode functionality with localStorage persistence
+        function initTheme() {
+            const savedTheme = localStorage.getItem('snglnk-theme');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else {
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(systemDark ? 'dark' : 'light');
+            }
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                if (!localStorage.getItem('snglnk-theme')) {
+                    setTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
         
-        let trackData = null; // Store track data for short link creation
-        
-        fetch('/?api=track-info', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                url: '<?= htmlspecialchars($originalUrl ?? '') ?>'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                throw new Error(data.error || 'Failed to fetch track info');
-            }
-            
-            // Store track data for later use
-            trackData = data.track;
-            
-            // Update original URL from API response
-            if (data.originalUrl) {
-                originalLinkUrl = data.originalUrl;
-            }
-            
-            // Update browser URL to short link if available
-            if (data.shortCode) {
-                history.pushState({}, '', '/' + data.shortCode);
-                shortUrl = 'https://snglnk.com/' + data.shortCode;
-                // Update input field to show the short link
-                document.getElementById('musicUrl').value = shortUrl;
-                // Show original link option
-                document.getElementById('originalLinkContainer').style.display = 'block';
-            }
-            
-            // Log performance metrics
-            if (data.perf) {
-                console.log(`PERF LAZY: Total=${data.perf.total}ms Parse=${data.perf.parse}ms API=${data.perf.api}ms Platform=${data.perf.platform}`);
-            }
-            
-            // Now fetch the HTML content with the track data
-            return fetch('/?api=lazy-content', {
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('snglnk-theme', newTheme);
+            setTheme(newTheme);
+        }
+
+        // Initialize theme on page load
+        initTheme();
+
+        // Lazy load the full content via AJAX
+        window.addEventListener('load', function () {
+            document.getElementById('skeleton').classList.add('show');
+
+            let trackData = null; // Store track data for short link creation
+
+            fetch('/?api=track-info', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    trackName: data.track.name,
-                    artistName: data.track.artist,
-                    albumArt: data.track.albumArt
+                    url: '<?= htmlspecialchars($originalUrl ?? '') ?>'
                 })
-            });
-        })
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('skeleton').classList.remove('show');
-            document.getElementById('content').innerHTML = html;
-            document.getElementById('content').classList.add('loaded');
-        })
-        .catch(error => {
-            document.getElementById('skeleton').classList.remove('show');
-            document.getElementById('content').innerHTML = '<p>Error loading content. Please refresh the page.</p>';
-            console.error('Error:', error);
-        });
-    });
-    
-    // Input handling (same as other pages)
-    let debounceTimer;
-    let originalUrl = document.getElementById('musicUrl').value;
-    
-    document.getElementById('musicUrl').addEventListener('input', function() {
-        const url = this.value.trim();
-        
-        clearTimeout(debounceTimer);
-        
-        if (url !== originalUrl) {
-            document.getElementById('content').style.display = 'none';
-            document.getElementById('skeleton').classList.remove('show');
-        }
-        
-        if (url === '') {
-            history.pushState({}, '', '/');
-            return;
-        }
-        
-        debounceTimer = setTimeout(() => {
-            // Don't update URL immediately - let the content load first, then update URL
-            loadLazyContent(url);
-        }, 200);
-    });
-    
-    function loadLazyContent(url) {
-        document.getElementById('skeleton').classList.add('show');
-        document.getElementById('content').style.display = 'none';
-        document.getElementById('originalLinkContainer').style.display = 'none';
-        
-        // Update original URL
-        originalLinkUrl = url.replace(/^https?:\/\//, '');
-        
-        let trackData = null; // Store track data for short link creation
-        
-        // Fetch the track info and lazy content
-        fetch('/?api=track-info', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: url })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Store track data for later use
-                trackData = data.track;
-                
-                // Update original URL from API response
-                if (data.originalUrl) {
-                    originalLinkUrl = data.originalUrl;
-                }
-                
-                // Check if user has preference and should redirect
-                if (data.hasPreference && data.redirectUrl) {
-                    // Update URL to short link before redirect if available
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.error || 'Failed to fetch track info');
+                    }
+
+                    // Store track data for later use
+                    trackData = data.track;
+
+                    // Update original URL from API response
+                    if (data.originalUrl) {
+                        originalLinkUrl = data.originalUrl;
+                    }
+
+                    // Update browser URL to short link if available
                     if (data.shortCode) {
                         history.pushState({}, '', '/' + data.shortCode);
-                    } else {
-                        const cleanUrl = url.replace(/^https?:\/\//, '');
-                        history.pushState({}, '', '/' + cleanUrl);
+                        shortUrl = 'https://snglnk.com/' + data.shortCode;
+                        // Update input field to show the short link
+                        document.getElementById('musicUrl').value = shortUrl;
+                        // Show original link option
+                        document.getElementById('originalLinkContainer').style.display = 'block';
                     }
-                    window.location.href = data.redirectUrl;
+
+                    // Log performance metrics
+                    if (data.perf) {
+                        console.log(`PERF LAZY: Total=${data.perf.total}ms Parse=${data.perf.parse}ms API=${data.perf.api}ms Platform=${data.perf.platform}`);
+                    }
+
+                    // Now fetch the HTML content with the track data
+                    return fetch('/?api=lazy-content', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            trackName: data.track.name,
+                            artistName: data.track.artist,
+                            albumArt: data.track.albumArt
+                        })
+                    });
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('skeleton').classList.remove('show');
+                    document.getElementById('content').innerHTML = html;
+                    document.getElementById('content').classList.add('loaded');
+                })
+                .catch(error => {
+                    document.getElementById('skeleton').classList.remove('show');
+                    document.getElementById('content').innerHTML = '<p>Error loading content. Please refresh the page.</p>';
+                    console.error('Error:', error);
+                });
+        });
+
+        // Input handling (same as other pages)
+        let debounceTimer;
+        let originalUrl = document.getElementById('musicUrl').value;
+
+        document.getElementById('musicUrl').addEventListener('input', function () {
+            const url = this.value.trim();
+
+            clearTimeout(debounceTimer);
+
+            if (url !== originalUrl) {
+                document.getElementById('content').style.display = 'none';
+                document.getElementById('skeleton').classList.remove('show');
+            }
+
+            if (url === '') {
+                history.pushState({}, '', '/');
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                // Don't update URL immediately - let the content load first, then update URL
+                loadLazyContent(url);
+            }, 200);
+        });
+
+        function loadLazyContent(url) {
+            document.getElementById('skeleton').classList.add('show');
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('originalLinkContainer').style.display = 'none';
+
+            // Update original URL
+            originalLinkUrl = url.replace(/^https?:\/\//, '');
+
+            let trackData = null; // Store track data for short link creation
+
+            // Fetch the track info and lazy content
+            fetch('/?api=track-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Store track data for later use
+                        trackData = data.track;
+
+                        // Update original URL from API response
+                        if (data.originalUrl) {
+                            originalLinkUrl = data.originalUrl;
+                        }
+
+                        // Check if user has preference and should redirect
+                        if (data.hasPreference && data.redirectUrl) {
+                            // Update URL to short link before redirect if available
+                            if (data.shortCode) {
+                                history.pushState({}, '', '/' + data.shortCode);
+                            } else {
+                                const cleanUrl = url.replace(/^https?:\/\//, '');
+                                history.pushState({}, '', '/' + cleanUrl);
+                            }
+                            window.location.href = data.redirectUrl;
+                            return;
+                        }
+
+                        // Update browser URL to short link if available
+                        if (data.shortCode) {
+                            history.pushState({}, '', '/' + data.shortCode);
+                            shortUrl = 'https://snglnk.com/' + data.shortCode;
+                            // Show original link option
+                            document.getElementById('originalLinkContainer').style.display = 'block';
+                        }
+
+                        // Load the lazy content
+                        return fetch('/?api=lazy-content', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                trackName: data.track.name,
+                                artistName: data.track.artist,
+                                albumArt: data.track.albumArt
+                            })
+                        });
+                    } else {
+                        throw new Error('Failed to get track info');
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('skeleton').classList.remove('show');
+                    document.getElementById('content').innerHTML = html;
+                    document.getElementById('content').classList.add('loaded');
+                    document.getElementById('content').style.display = 'block';
+
+                    // Update input field to show the short link if available
+                    if (shortUrl) {
+                        document.getElementById('musicUrl').value = shortUrl;
+                        // Show original link option
+                        document.getElementById('originalLinkContainer').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('skeleton').classList.remove('show');
+                    document.getElementById('content').innerHTML = '<p>Error loading content. Please refresh the page.</p>';
+                    document.getElementById('content').style.display = 'block';
+                    console.error('Error:', error);
+                });
+        }
+
+        function copyToClipboard() {
+            const urlToCopy = shortUrl || window.location.href;
+            navigator.clipboard.writeText(urlToCopy).then(() => {
+                const shareBtn = document.querySelector('.cp-btn');
+                const originalText = shareBtn.innerHTML;
+
+                shareBtn.innerHTML = 'Copied!';
+                shareBtn.style.background = '#28a745';
+
+                setTimeout(() => {
+                    shareBtn.innerHTML = originalText;
+                    shareBtn.style.background = '#28a745';
+                }, 1000);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = urlToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                const shareBtn = document.querySelector('.cp-btn');
+                shareBtn.innerHTML = 'Copied!';
+                setTimeout(() => {
+                    shareBtn.innerHTML = 'Copy';
+                }, 1000);
+            });
+        }
+
+        function copyOriginalLink() {
+            const urlToCopy = 'https://' + originalLinkUrl;
+            navigator.clipboard.writeText(urlToCopy).then(() => {
+                const link = document.querySelector('#originalLinkContainer a');
+                const originalText = link.innerHTML;
+
+                link.innerHTML = 'Copied!';
+                link.style.color = '#28a745';
+
+                setTimeout(() => {
+                    link.innerHTML = originalText;
+                    link.style.color = '#666';
+                }, 1000);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = urlToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                const link = document.querySelector('#originalLinkContainer a');
+                link.innerHTML = 'Copied!';
+                setTimeout(() => {
+                    link.innerHTML = 'Copy original link';
+                }, 1000);
+            });
+        }
+
+        let shortUrl = null;
+        let originalLinkUrl = '<?= htmlspecialchars($originalUrl ?? '') ?>';
+
+        function showQRCode() {
+            const urlToEncode = shortUrl || window.location.href;
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+
+            QRCode.toCanvas(urlToEncode, { width: 200, margin: 2 }, function (error, canvas) {
+                if (error) {
+                    console.error('QR Code error:', error);
                     return;
                 }
-                
-                // Update browser URL to short link if available
-                if (data.shortCode) {
-                    history.pushState({}, '', '/' + data.shortCode);
-                    shortUrl = 'https://snglnk.com/' + data.shortCode;
-                    // Show original link option
-                    document.getElementById('originalLinkContainer').style.display = 'block';
-                }
-                
-                // Load the lazy content
-                return fetch('/?api=lazy-content', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        trackName: data.track.name,
-                        artistName: data.track.artist,
-                        albumArt: data.track.albumArt
-                    })
-                });
-            } else {
-                throw new Error('Failed to get track info');
-            }
-        })
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('skeleton').classList.remove('show');
-            document.getElementById('content').innerHTML = html;
-            document.getElementById('content').classList.add('loaded');
-            document.getElementById('content').style.display = 'block';
-            
-            // Update input field to show the short link if available
-            if (shortUrl) {
-                document.getElementById('musicUrl').value = shortUrl;
-                // Show original link option
-                document.getElementById('originalLinkContainer').style.display = 'block';
-            }
-        })
-        .catch(error => {
-            document.getElementById('skeleton').classList.remove('show');
-            document.getElementById('content').innerHTML = '<p>Error loading content. Please refresh the page.</p>';
-            document.getElementById('content').style.display = 'block';
-            console.error('Error:', error);
-        });
-    }
-    
-    function copyToClipboard() {
-        const urlToCopy = shortUrl || window.location.href;
-        navigator.clipboard.writeText(urlToCopy).then(() => {
-            const shareBtn = document.querySelector('.cp-btn');
-            const originalText = shareBtn.innerHTML;
-            
-            shareBtn.innerHTML = 'Copied!';
-            shareBtn.style.background = '#28a745';
-            
-            setTimeout(() => {
-                shareBtn.innerHTML = originalText;
-                shareBtn.style.background = '#28a745';
-            }, 1000);
-        }).catch(() => {
-            const textArea = document.createElement('textarea');
-            textArea.value = urlToCopy;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            const shareBtn = document.querySelector('.cp-btn');
-            shareBtn.innerHTML = 'Copied!';
-            setTimeout(() => {
-                shareBtn.innerHTML = 'Copy';
-            }, 1000);
-        });
-    }
-    
-    function copyOriginalLink() {
-        const urlToCopy = 'https://' + originalLinkUrl;
-        navigator.clipboard.writeText(urlToCopy).then(() => {
-            const link = document.querySelector('#originalLinkContainer a');
-            const originalText = link.innerHTML;
-            
-            link.innerHTML = 'Copied!';
-            link.style.color = '#28a745';
-            
-            setTimeout(() => {
-                link.innerHTML = originalText;
-                link.style.color = '#666';
-            }, 1000);
-        }).catch(() => {
-            const textArea = document.createElement('textarea');
-            textArea.value = urlToCopy;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            const link = document.querySelector('#originalLinkContainer a');
-            link.innerHTML = 'Copied!';
-            setTimeout(() => {
-                link.innerHTML = 'Copy original link';
-            }, 1000);
-        });
-    }
-    
-    let shortUrl = null;
-    let originalLinkUrl = '<?= htmlspecialchars($originalUrl ?? '') ?>';
-    
-    function createShortLink(originalUrl, trackName, artistName, albumArt) {
-        fetch('/?api=create-short-link', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                url: originalUrl,
-                trackName: trackName,
-                artistName: artistName,
-                albumArt: albumArt
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                shortUrl = data.short_url;
-                const shareBtn = document.querySelector('.cp-btn');
-                if (shareBtn) shareBtn.style.display = 'block';
-                
-                // Update input field to show the short link
-                document.getElementById('musicUrl').value = data.short_url;
-            } else {
-                // Fallback to current URL if short link creation fails
-                shortUrl = window.location.href;
-                const shareBtn = document.querySelector('.cp-btn');
-                if (shareBtn) shareBtn.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            // Fallback to current URL on error
-            shortUrl = window.location.href;
-            const shareBtn = document.querySelector('.cp-btn');
-            if (shareBtn) shareBtn.style.display = 'block';
-            console.error('Short link creation error:', error);
-        });
-    }
-    
-    function setPreference(provider) {
-        if (document.getElementById("remember").checked) {
-            document.cookie = "music_provider=" + provider + "; max-age=" + (365*24*60*60) + "; path=/";
+                qrContainer.appendChild(canvas);
+            });
+
+            document.getElementById('qrModal').classList.add('show');
         }
-    }
+
+        function hideQRCode() {
+            document.getElementById('qrModal').classList.remove('show');
+        }
+
+        function createShortLink(originalUrl, trackName, artistName, albumArt) {
+            fetch('/?api=create-short-link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: originalUrl,
+                    trackName: trackName,
+                    artistName: artistName,
+                    albumArt: albumArt
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        shortUrl = data.short_url;
+                        const shareBtn = document.querySelector('.cp-btn');
+                        if (shareBtn) shareBtn.style.display = 'block';
+
+                        // Update input field to show the short link
+                        document.getElementById('musicUrl').value = data.short_url;
+                    } else {
+                        // Fallback to current URL if short link creation fails
+                        shortUrl = window.location.href;
+                        const shareBtn = document.querySelector('.cp-btn');
+                        if (shareBtn) shareBtn.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    // Fallback to current URL on error
+                    shortUrl = window.location.href;
+                    const shareBtn = document.querySelector('.cp-btn');
+                    if (shareBtn) shareBtn.style.display = 'block';
+                    console.error('Short link creation error:', error);
+                });
+        }
+
+        function setPreference(provider) {
+            if (document.getElementById("remember").checked) {
+                document.cookie = "music_provider=" + provider + "; max-age=" + (365 * 24 * 60 * 60) + "; path=/";
+            }
+        }
     </script>
 </body>
+
 </html>

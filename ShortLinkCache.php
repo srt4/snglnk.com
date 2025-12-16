@@ -164,4 +164,30 @@ class ShortLinkCache
             return ['error' => $e->getMessage()];
         }
     }
+
+    public function getTopLinks($limit = 10)
+    {
+        if (!$this->db)
+            return [];
+
+        try {
+            $stmt = $this->db->prepare("SELECT short_code, original_url, track_name, cnt, last_clicked FROM clicks ORDER BY cnt DESC LIMIT ?");
+            $stmt->bindValue(1, $limit, SQLITE3_INTEGER);
+            $result = $stmt->execute();
+
+            $links = [];
+            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                $links[] = [
+                    'short_code' => $row['short_code'],
+                    'original_url' => $row['original_url'],
+                    'track_name' => $row['track_name'],
+                    'clicks' => $row['cnt'],
+                    'last_clicked' => $row['last_clicked'] ? date('M j, Y g:ia', $row['last_clicked']) : 'Never'
+                ];
+            }
+            return $links;
+        } catch (Exception $e) {
+            return [];
+        }
+    }
 }

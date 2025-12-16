@@ -18,19 +18,22 @@ $shortLinks = new ShortLinkCache();
 $initEnd = microtime(true);
 
 // Function to get user's preferred music provider from cookie
-function getUserPreference() {
+function getUserPreference()
+{
     return isset($_COOKIE['music_provider']) ? $_COOKIE['music_provider'] : null;
 }
 
 // Function to set user's music provider preference
-function setUserPreference($provider) {
+function setUserPreference($provider)
+{
     setcookie('music_provider', $provider, time() + (365 * 24 * 60 * 60), '/'); // 1 year
 }
 
 // Function to show provider selection page
-function showProviderSelection($trackName, $artistName, $trackInfo = null, $originalUrl = null) {
+function showProviderSelection($trackName, $artistName, $trackInfo = null, $originalUrl = null)
+{
     global $musicProviders, $providerManager, $template;
-    
+
     // Prepare provider data for template
     $providers = [];
     foreach ($musicProviders as $provider => $url) {
@@ -39,7 +42,7 @@ function showProviderSelection($trackName, $artistName, $trackInfo = null, $orig
             'url' => $providerManager->getSearchUrl($provider, $trackName, $artistName)
         ];
     }
-    
+
     // Render template
     $template->display('provider-selection', [
         'trackName' => $trackName,
@@ -58,12 +61,12 @@ if (isset($_GET['api']) && $_GET['api'] === 'lazy-content') {
         echo json_encode(['success' => false, 'error' => 'Method not allowed']);
         exit();
     }
-    
+
     $input = json_decode(file_get_contents('php://input'), true);
     $trackName = $input['trackName'] ?? '';
     $artistName = $input['artistName'] ?? '';
     $albumArt = $input['albumArt'] ?? null;
-    
+
     // Generate the provider content
     $providers = [];
     foreach ($musicProviders as $provider => $baseUrl) {
@@ -73,7 +76,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'lazy-content') {
             'url' => $providerManager->getSearchUrl($provider, $trackName, $artistName)
         ];
     }
-    
+
     // Return HTML content using template
     $template->display('lazy-content', [
         'trackName' => $trackName,
@@ -81,7 +84,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'lazy-content') {
         'albumArt' => $albumArt,
         'providers' => $providers
     ]);
-    
+
     exit();
 }
 
@@ -89,60 +92,60 @@ if (isset($_GET['api']) && $_GET['api'] === 'lazy-content') {
 if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
     $ajaxStartTime = microtime(true);
     header('Content-Type: application/json');
-    
+
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode(['success' => false, 'error' => 'Method not allowed']);
         exit();
     }
-    
+
     $input = json_decode(file_get_contents('php://input'), true);
     if (!isset($input['url'])) {
         echo json_encode(['success' => false, 'error' => 'URL is required']);
         exit();
     }
-    
+
     $apiUrl = $input['url'];
-    
+
     // Remove protocol if present
     if (preg_match('/^https?:\/\/(.+)/', $apiUrl, $matches)) {
         $apiUrl = $matches[1];
     }
-    
+
     // Clean tracking parameters from URL (same as main flow)
     $trackCache = new TrackCache();
     $cleanedUrl = $trackCache->cleanUrl('https://' . $apiUrl);
     $apiUrl = preg_replace('/^https?:\/\//', '', $cleanedUrl);
-    
+
     // Parse the URL
     $ajaxParseStart = microtime(true);
     $parsedTrack = $providerManager->parseUrl($apiUrl);
     $ajaxParseEnd = microtime(true);
-    
+
     if (!$parsedTrack) {
         echo json_encode(['success' => false, 'error' => 'Unsupported URL format']);
         exit();
     }
-    
+
     // Get track information
     $ajaxApiStart = microtime(true);
     $trackInfo = $providerManager->getTrackInfo($parsedTrack['platform'], $parsedTrack['data']);
     $ajaxApiEnd = microtime(true);
-    
+
     if (!$trackInfo || empty($trackInfo['name']) || empty($trackInfo['artists'][0]['name'])) {
         echo json_encode(['success' => false, 'error' => 'Unable to fetch track information']);
         exit();
     }
-    
+
     $trackName = $trackInfo['name'];
     $artistName = $trackInfo['artists'][0]['name'];
-    
+
     // Check if user has a preference
     $userPreference = getUserPreference();
-    
+
     // Generate short link for this track
     $shortCode = $shortLinks->createShortLink($apiUrl);
-    
+
     $response = [
         'success' => true,
         'track' => [
@@ -156,7 +159,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
         'shortCode' => $shortCode,
         'originalUrl' => $apiUrl
     ];
-    
+
     // Build providers list
     foreach ($musicProviders as $provider => $baseUrl) {
         $response['track']['providers'][] = [
@@ -165,13 +168,13 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
             'url' => $providerManager->getSearchUrl($provider, $trackName, $artistName)
         ];
     }
-    
+
     // If user has preference, set redirect URL
     if ($userPreference && isset($musicProviders[$userPreference])) {
         $response['hasPreference'] = true;
         $response['redirectUrl'] = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
     }
-    
+
     // Add performance metrics
     $ajaxTotalTime = microtime(true) - $ajaxStartTime;
     $ajaxParseTime = ($ajaxParseEnd - $ajaxParseStart) * 1000;
@@ -182,7 +185,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'track-info') {
         'api' => round($ajaxApiTime, 2),
         'platform' => $parsedTrack['platform']
     ];
-    
+
     echo json_encode($response);
     exit();
 }
@@ -213,26 +216,26 @@ if (isset($_GET['cache_stats'])) {
 // Handle short link creation
 if (isset($_GET['api']) && $_GET['api'] === 'create-short-link') {
     header('Content-Type: application/json');
-    
+
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode(['success' => false, 'error' => 'Method not allowed']);
         exit();
     }
-    
+
     $input = json_decode(file_get_contents('php://input'), true);
     if (!isset($input['url'])) {
         echo json_encode(['success' => false, 'error' => 'URL is required']);
         exit();
     }
-    
+
     $originalUrl = $input['url'];
     $trackName = $input['trackName'] ?? null;
     $artistName = $input['artistName'] ?? null;
     $albumArt = $input['albumArt'] ?? null;
-    
+
     $shortCode = $shortLinks->createShortLink($originalUrl, $trackName, $artistName, $albumArt);
-    
+
     if ($shortCode) {
         echo json_encode([
             'success' => true,
@@ -261,15 +264,21 @@ if (empty($musicUrl) || $musicUrl === '') {
     exit();
 }
 
+// Handle stats page
+if ($musicUrl === 'stats') {
+    require_once 'stats.php';
+    exit();
+}
+
 // Handle short link redirects (s/xxxxx, a/xxxxx, y/xxxxx)
 if (preg_match('/^([say])\/([a-zA-Z0-9_-]+)$/', $musicUrl, $matches)) {
     $shortCode = $matches[1] . '/' . $matches[2];
     $shortLinkData = $shortLinks->getByCode($shortCode);
-    
+
     if ($shortLinkData) {
         // Increment click counter (no-op now, but keeps compatibility)
         $shortLinks->incrementClicks($shortCode);
-        
+
         // Set the music URL to the reconstructed original URL and continue processing
         $musicUrl = $shortLinkData['original_url'];
     } else {
@@ -281,7 +290,8 @@ if (preg_match('/^([say])\/([a-zA-Z0-9_-]+)$/', $musicUrl, $matches)) {
 }
 
 // Function to detect social media crawlers/bots
-function isSocialBot() {
+function isSocialBot()
+{
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $botPatterns = [
         'WhatsApp',
@@ -298,13 +308,13 @@ function isSocialBot() {
         'spider',
         'bot'
     ];
-    
+
     foreach ($botPatterns as $pattern) {
         if (stripos($userAgent, $pattern) !== false) {
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -333,10 +343,10 @@ if (isSocialBot()) {
         if ($trackInfo && !empty($trackInfo['name']) && !empty($trackInfo['artists'][0]['name'])) {
             $trackName = $trackInfo['name'];
             $artistName = $trackInfo['artists'][0]['name'];
-            
+
             // Get user's preferred music provider
             $userPreference = getUserPreference();
-            
+
             if ($userPreference && isset($musicProviders[$userPreference])) {
                 // Redirect to user's preferred provider
                 $redirectUrl = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
@@ -362,35 +372,35 @@ if (isSocialBot()) {
 } else {
     // For real users: Check preference first, then lazy load if no preference
     $userPreference = getUserPreference();
-    
+
     if ($userPreference && isset($musicProviders[$userPreference])) {
         // User has preference - do minimal processing for redirect
         $parseStartTime = microtime(true);
         $parsedTrack = $providerManager->parseUrl($musicUrl);
         $parseEndTime = microtime(true);
-        
+
         if ($parsedTrack) {
             $apiStartTime = microtime(true);
             $trackInfo = $providerManager->getTrackInfo($parsedTrack['platform'], $parsedTrack['data']);
             $apiEndTime = microtime(true);
-            
+
             if ($trackInfo && !empty($trackInfo['name']) && !empty($trackInfo['artists'][0]['name'])) {
                 $trackName = $trackInfo['name'];
                 $artistName = $trackInfo['artists'][0]['name'];
-                
+
                 // Redirect to user's preferred provider
                 $totalTime = microtime(true) - $startTime;
                 $parseTime = ($parseEndTime - $parseStartTime) * 1000;
                 $apiTime = ($apiEndTime - $apiStartTime) * 1000;
                 echo "<!-- PERF USER REDIRECT: Total=" . round($totalTime * 1000, 2) . "ms Parse=" . round($parseTime, 2) . "ms API=" . round($apiTime, 2) . "ms Platform=" . $parsedTrack['platform'] . " -->";
-                
+
                 $redirectUrl = $providerManager->getSearchUrl($userPreference, $trackName, $artistName);
                 header("Location: $redirectUrl");
                 exit();
             }
         }
     }
-    
+
     // No preference or couldn't process - show lazy loading version
     $totalTime = microtime(true) - $startTime;
     $requireTime = ($requireEnd - $requireStart) * 1000;
