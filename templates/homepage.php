@@ -334,70 +334,30 @@
             margin-top: 20px;
             color: #666;
         }
-
-            padding: 18px 16px;
-            background: #6c5ce7;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            display: none;
-            transition: all 0.1s ease;
-            -webkit-flex-shrink: 0;
-            flex-shrink: 0;
-            font-weight: bold;
-        }
-
-            background: #5b4cdb;
-            transform: scale(1.02);
-        }
-
-            transform: scale(0.98);
-        }
-
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-            display: flex;
-        }
-
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 16px;
+        
+        .preselect {
+            margin: 30px 0;
             text-align: center;
         }
-
-            margin: 0 auto 15px;
+        
+        .preselect .providers {
+            justify-content: center;
         }
-
-            border-radius: 8px;
-        }
-
-            color: #888;
-            margin: 10px 0;
+        
+        .current-pref {
+            margin-top: 15px;
             font-size: 14px;
+            color: #888;
         }
-
-            padding: 12px 30px;
-            background: #6c5ce7;
-            color: white;
-            border: none;
-            border-radius: 8px;
+        
+        .current-pref a {
+            color: #6c5ce7;
             cursor: pointer;
-            font-size: 16px;
         }
-
-            background: #5b4cdb;
+        
+        .provider.selected {
+            outline: 3px solid #fff;
+            box-shadow: 0 0 0 5px rgba(108, 92, 231, 0.5);
         }
     </style>
     <style>
@@ -440,8 +400,18 @@
         <button class="cp-btn" id="shareBtn" onclick="copyToClipboard()" title="Copy link">Copy</button>
     </div>
 
-    <!-- QR Code Modal -->
+    <!-- Pre-selection: Choose provider before pasting -->
+    <div class="preselect" id="preselect">
+        <p style="margin-bottom: 15px;">Where do you want links to open?</p>
+        <div class="providers">
+            <button class="provider spotify" onclick="preSelectProvider('spotify')">Spotify</button>
+            <button class="provider youtube" onclick="preSelectProvider('youtube')">YouTube</button>
+            <button class="provider apple" onclick="preSelectProvider('apple')">Apple</button>
         </div>
+        <div class="remember" style="margin-top: 15px;">
+            <label><input type="checkbox" id="rememberPreselect" checked> Remember my choice</label>
+        </div>
+        <p class="current-pref" id="currentPref"></p>
     </div>
 
     <div class="loading" id="loading"></div>
@@ -495,7 +465,7 @@
             const toggle = document.getElementById('themeToggle');
             if (toggle) toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
-        
+
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme');
             const newTheme = current === 'dark' ? 'light' : 'dark';
@@ -505,6 +475,52 @@
 
         // Initialize theme on page load
         initTheme();
+        
+        // Pre-select provider functionality
+        function preSelectProvider(provider) {
+            if (document.getElementById('rememberPreselect').checked) {
+                document.cookie = 'music_provider=' + provider + '; max-age=' + (365*24*60*60) + '; path=/';
+            }
+            updateCurrentPref(provider);
+            
+            // Highlight selected button
+            document.querySelectorAll('.preselect .provider').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('.preselect .provider.' + provider).classList.add('selected');
+        }
+        
+        function updateCurrentPref(provider) {
+            const prefDisplay = document.getElementById('currentPref');
+            if (provider) {
+                const names = {spotify: 'Spotify', youtube: 'YouTube Music', apple: 'Apple Music'};
+                prefDisplay.innerHTML = '✓ Links will open in <strong>' + names[provider] + '</strong> <a onclick="clearPref()">change</a>';
+            } else {
+                prefDisplay.innerHTML = '';
+            }
+        }
+        
+        function clearPref() {
+            document.cookie = 'music_provider=; max-age=0; path=/';
+            document.getElementById('currentPref').innerHTML = 'Preference cleared!';
+            document.querySelectorAll('.preselect .provider').forEach(btn => btn.classList.remove('selected'));
+            setTimeout(() => {
+                document.getElementById('currentPref').innerHTML = '';
+            }, 2000);
+        }
+        
+        // Show current preference on load
+        function initPref() {
+            const cookies = document.cookie.split(';');
+            for (let c of cookies) {
+                const [key, val] = c.trim().split('=');
+                if (key === 'music_provider' && val) {
+                    updateCurrentPref(val);
+                    const btn = document.querySelector('.preselect .provider.' + val);
+                    if (btn) btn.classList.add('selected');
+                    break;
+                }
+            }
+        }
+        initPref();
 
         let debounceTimer;
 
@@ -520,11 +536,13 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('skeleton').classList.remove('show');
             document.getElementById('shareBtn').style.display = 'none';
+            document.getElementById('preselect').style.display = 'none';
 
             if (url === '') {
-                // Show header again when input is cleared
+                // Show header and preselect again when input is cleared
                 const header = document.getElementById('header');
                 header.classList.remove('hide');
+                document.getElementById('preselect').style.display = 'block';
                 history.pushState({}, '', '/');
                 return;
             }
@@ -666,20 +684,20 @@
                 });
         }
 
-            const urlToEncode = shortUrl || window.location.href;
-            qrContainer.innerHTML = '';
+        const urlToEncode = shortUrl || window.location.href;
+        qrContainer.innerHTML = '';
 
-                if (error) {
-                    console.error('QR Code error:', error);
-                    return;
-                }
-                qrContainer.appendChild(canvas);
+        if (error) {
+            console.error('QR Code error:', error);
+            return;
+        }
+        qrContainer.appendChild(canvas);
             });
 
-            document.getElementById('qrModal').classList.add('show');
+        document.getElementById('qrModal').classList.add('show');
         }
 
-            document.getElementById('qrModal').classList.remove('show');
+        document.getElementById('qrModal').classList.remove('show');
         }
 
         function copyToClipboard() {
