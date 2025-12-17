@@ -335,7 +335,6 @@
             color: #666;
         }
 
-        .qr-btn {
             padding: 18px 16px;
             background: #6c5ce7;
             color: white;
@@ -350,16 +349,13 @@
             font-weight: bold;
         }
 
-        .qr-btn:hover {
             background: #5b4cdb;
             transform: scale(1.02);
         }
 
-        .qr-btn:active {
             transform: scale(0.98);
         }
 
-        .qr-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -372,32 +368,26 @@
             align-items: center;
         }
 
-        .qr-modal.show {
             display: flex;
         }
 
-        .qr-modal-content {
             background: var(--card-bg);
             padding: 30px;
             border-radius: 16px;
             text-align: center;
         }
 
-        .qr-modal-content #qrcode {
             margin: 0 auto 15px;
         }
 
-        .qr-modal-content #qrcode canvas {
             border-radius: 8px;
         }
 
-        .qr-hint {
             color: #888;
             margin: 10px 0;
             font-size: 14px;
         }
 
-        .qr-close {
             padding: 12px 30px;
             background: #6c5ce7;
             color: white;
@@ -407,11 +397,9 @@
             font-size: 16px;
         }
 
-        .qr-close:hover {
             background: #5b4cdb;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         .theme-toggle {
             position: fixed;
@@ -449,16 +437,10 @@
     <div class="input-container">
         <input type="text" class="url-input" placeholder="Paste Spotify, YouTube Music, or Apple Music link here..."
             id="musicUrl">
-        <button class="qr-btn" id="qrBtn" onclick="showQRCode()" title="Show QR Code" style="display: none;">QR</button>
         <button class="cp-btn" id="shareBtn" onclick="copyToClipboard()" title="Copy link">Copy</button>
     </div>
 
     <!-- QR Code Modal -->
-    <div class="qr-modal" id="qrModal" onclick="hideQRCode()">
-        <div class="qr-modal-content" onclick="event.stopPropagation()">
-            <div id="qrcode"></div>
-            <p class="qr-hint">Scan to open on mobile</p>
-            <button class="qr-close" onclick="hideQRCode()">Close</button>
         </div>
     </div>
 
@@ -684,12 +666,9 @@
                 });
         }
 
-        function showQRCode() {
             const urlToEncode = shortUrl || window.location.href;
-            const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
 
-            QRCode.toCanvas(urlToEncode, { width: 200, margin: 2 }, function (error, canvas) {
                 if (error) {
                     console.error('QR Code error:', error);
                     return;
@@ -700,7 +679,6 @@
             document.getElementById('qrModal').classList.add('show');
         }
 
-        function hideQRCode() {
             document.getElementById('qrModal').classList.remove('show');
         }
 
