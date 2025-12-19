@@ -189,68 +189,68 @@
             background: #1e7e34;
         }
 
-            padding: 16px 14px;
-            background: #6c5ce7;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.1s ease;
-            -webkit-flex-shrink: 0;
-            flex-shrink: 0;
-            font-weight: bold;
+        padding: 16px 14px;
+        background: #6c5ce7;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.1s ease;
+        -webkit-flex-shrink: 0;
+        flex-shrink: 0;
+        font-weight: bold;
         }
 
-            background: #5b4cdb;
-            transform: scale(1.02);
+        background: #5b4cdb;
+        transform: scale(1.02);
         }
 
-            transform: scale(0.98);
+        transform: scale(0.98);
         }
 
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
         }
 
-            display: flex;
+        display: flex;
         }
 
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 16px;
-            text-align: center;
+        background: var(--card-bg);
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
         }
 
-            margin: 0 auto 15px;
+        margin: 0 auto 15px;
         }
 
-            border-radius: 8px;
+        border-radius: 8px;
         }
 
-            color: #888;
-            margin: 10px 0;
-            font-size: 14px;
+        color: #888;
+        margin: 10px 0;
+        font-size: 14px;
         }
 
-            padding: 12px 30px;
-            background: #6c5ce7;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
+        padding: 12px 30px;
+        background: #6c5ce7;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
         }
 
-            background: #5b4cdb;
+        background: #5b4cdb;
         }
     </style>
     <style>
@@ -289,7 +289,7 @@
     </div>
 
     <!-- QR Code Modal -->
-        </div>
+    </div>
     </div>
 
     <div class="track-info">
@@ -410,21 +410,6 @@
             });
         }
 
-            const urlToEncode = window.location.href;
-            qrContainer.innerHTML = '';
-
-                if (error) {
-                    console.error('QR Code error:', error);
-                    return;
-                }
-                qrContainer.appendChild(canvas);
-            });
-
-            document.getElementById('qrModal').classList.add('show');
-        }
-
-            document.getElementById('qrModal').classList.remove('show');
-        }
     </script>
 </body>
 

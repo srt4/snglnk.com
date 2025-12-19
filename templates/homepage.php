@@ -671,7 +671,6 @@
                     if (data.success) {
                         shortUrl = data.short_url;
                         document.getElementById('shareBtn').style.display = 'block';
-                        document.getElementById('qrBtn').style.display = 'block';
 
                         // Update input field to show the short link
                         document.getElementById('musicUrl').value = data.short_url;
@@ -679,32 +678,14 @@
                         // Fallback to current URL if short link creation fails
                         shortUrl = window.location.href;
                         document.getElementById('shareBtn').style.display = 'block';
-                        document.getElementById('qrBtn').style.display = 'block';
                     }
                 })
                 .catch(error => {
                     // Fallback to current URL on error
                     shortUrl = window.location.href;
                     document.getElementById('shareBtn').style.display = 'block';
-                    document.getElementById('qrBtn').style.display = 'block';
                     console.error('Short link creation error:', error);
                 });
-        }
-
-        const urlToEncode = shortUrl || window.location.href;
-        qrContainer.innerHTML = '';
-
-        if (error) {
-            console.error('QR Code error:', error);
-            return;
-        }
-        qrContainer.appendChild(canvas);
-            });
-
-        document.getElementById('qrModal').classList.add('show');
-        }
-
-        document.getElementById('qrModal').classList.remove('show');
         }
 
         function copyToClipboard() {
