@@ -295,6 +295,9 @@
             transition: all 0.1s ease;
             font-size: 18px;
             transform: scale(1);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
         }
 
         .provider:hover {
@@ -334,27 +337,27 @@
             margin-top: 20px;
             color: #666;
         }
-        
+
         .preselect {
             margin: 30px 0;
             text-align: center;
         }
-        
+
         .preselect .providers {
             justify-content: center;
         }
-        
+
         .current-pref {
             margin-top: 15px;
             font-size: 14px;
             color: #888;
         }
-        
+
         .current-pref a {
             color: #6c5ce7;
             cursor: pointer;
         }
-        
+
         .provider.selected {
             outline: 3px solid #fff;
             box-shadow: 0 0 0 5px rgba(108, 92, 231, 0.5);
@@ -475,29 +478,29 @@
 
         // Initialize theme on page load
         initTheme();
-        
+
         // Pre-select provider functionality
         function preSelectProvider(provider) {
             if (document.getElementById('rememberPreselect').checked) {
-                document.cookie = 'music_provider=' + provider + '; max-age=' + (365*24*60*60) + '; path=/';
+                document.cookie = 'music_provider=' + provider + '; max-age=' + (365 * 24 * 60 * 60) + '; path=/';
             }
             updateCurrentPref(provider);
-            
+
             // Highlight selected button
             document.querySelectorAll('.preselect .provider').forEach(btn => btn.classList.remove('selected'));
             document.querySelector('.preselect .provider.' + provider).classList.add('selected');
         }
-        
+
         function updateCurrentPref(provider) {
             const prefDisplay = document.getElementById('currentPref');
             if (provider) {
-                const names = {spotify: 'Spotify', youtube: 'YouTube Music', apple: 'Apple Music'};
+                const names = { spotify: 'Spotify', youtube: 'YouTube Music', apple: 'Apple Music' };
                 prefDisplay.innerHTML = '✓ Links will open in <strong>' + names[provider] + '</strong> <a onclick="clearPref()">change</a>';
             } else {
                 prefDisplay.innerHTML = '';
             }
         }
-        
+
         function clearPref() {
             document.cookie = 'music_provider=; max-age=0; path=/';
             document.getElementById('currentPref').innerHTML = 'Preference cleared!';
@@ -506,7 +509,7 @@
                 document.getElementById('currentPref').innerHTML = '';
             }, 2000);
         }
-        
+
         // Show current preference on load
         function initPref() {
             const cookies = document.cookie.split(';');
