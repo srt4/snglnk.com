@@ -359,8 +359,12 @@
         }
 
         .provider.selected {
-            outline: 3px solid #fff;
-            box-shadow: 0 0 0 5px rgba(108, 92, 231, 0.5);
+            transform: scale(1.08);
+            box-shadow: 0 0 0 4px #6c5ce7, 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .provider.selected::after {
+            content: ' ✓';
         }
     </style>
     <style>
