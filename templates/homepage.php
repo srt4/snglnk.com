@@ -298,6 +298,8 @@
             border: none;
             cursor: pointer;
             font-weight: 500;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .provider:hover {
@@ -360,9 +362,9 @@
 
         .provider.selected {
             transform: scale(1.08);
-            box-shadow: 0 0 0 4px #6c5ce7, 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 0 0 4px #6c5ce7, 0 8px 20px rgba(0, 0, 0, 0.3);
         }
-        
+
         .provider.selected::after {
             content: ' ✓';
         }
